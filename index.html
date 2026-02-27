@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GRE Analyser</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/recharts@2.8.0/umd/Recharts.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --ink:#111;--bg:#f5f2ec;--surface:#fff;--surface2:#ede9e0;
+      --border:#ddd8cc;--muted:#8a8274;
+      --teal:#0b6b6f;--teal-l:#d6eff0;
+      --amber:#b8730a;--amber-l:#fdf0d8;
+      --red:#8b2525;--red-l:#faeaea;
+      --green:#2d6a44;--green-l:#dff0e6;
+      --purple:#4a3585;--purple-l:#ece8f8;
+      --orange:#c45c0a;--orange-l:#fde8d0;
+      --blue:#1a4f8a;--blue-l:#e0eaf8;
+    }
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px}
+    .nav{background:var(--ink);padding:0 24px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+    .nav-brand{font-family:'Fraunces',serif;font-size:1.1rem;color:#fff;padding:16px 20px 16px 0;margin-right:8px;border-right:1px solid #333;white-space:nowrap}
+    .nav-brand span{color:#5ec4c8;font-style:italic}
+    .nav-tabs{display:flex;flex:1;padding-left:4px}
+    .nav-tab{background:none;border:none;color:#777;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.82rem;font-weight:500;padding:18px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+    .nav-tab:hover{color:#bbb}
+    .nav-tab.active{color:#5ec4c8;border-bottom-color:#5ec4c8}
+    .nav-right{font-family:'DM Mono',monospace;font-size:0.68rem;color:#555;margin-left:auto;display:flex;align-items:center;gap:12px}
+    .signout-btn{background:none;border:1px solid #444;color:#888;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.72rem;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
+    .signout-btn:hover{border-color:#888;color:#ccc}
+    .page{max-width:960px;margin:0 auto;padding:28px 20px 80px}
+    .sec-title{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:600;margin-bottom:4px}
+    .sec-sub{font-size:0.82rem;color:var(--muted);margin-bottom:24px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .card-title{font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px}
+    .stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .stat-card .num{font-family:'Fraunces',serif;font-size:2rem;font-weight:600;line-height:1;margin-bottom:4px}
+    .stat-card .lbl{font-size:0.72rem;color:var(--muted);line-height:1.3}
+    .stat-card .sub{font-size:0.66rem;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace}
+    .c-teal{color:var(--teal)} .c-amber{color:var(--amber)} .c-red{color:var(--red)} .c-green{color:var(--green)} .c-purple{color:var(--purple)} .c-orange{color:var(--orange)}
+    .chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .chart-full{margin-bottom:16px}
+    .mistake-section{margin-bottom:12px}
+    .mistake-label{font-size:0.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:block}
+    .mistake-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+    .mt-btn{border:1.5px solid var(--border);border-radius:7px;padding:8px 6px;cursor:pointer;background:var(--surface2);text-align:center;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif}
+    .mt-btn:hover{border-color:var(--amber);background:var(--amber-l)}
+    .mt-btn.selected{border-color:var(--amber);background:var(--amber-l)}
+    .mt-btn .mt-icon{font-size:1.1rem;display:block;margin-bottom:3px}
+    .mt-btn .mt-name{font-size:0.68rem;font-weight:600;color:var(--ink);display:block;line-height:1.2}
+    .mt-btn .mt-desc{font-size:0.6rem;color:var(--muted);display:block;margin-top:2px;line-height:1.3}
+    .mt-btn.selected .mt-name{color:var(--amber)}
+    .tip-box{border-radius:8px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--border)}
+    .tip-box .tip-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .tip-box .tip-icon{font-size:1.1rem}
+    .tip-box .tip-title{font-weight:600;font-size:0.88rem}
+    .tip-box .tip-text{font-size:0.83rem;line-height:1.6;color:var(--muted)}
+    .mistake-breakdown{display:flex;flex-direction:column;gap:8px}
+    .mb-row{display:flex;align-items:center;gap:10px}
+    .mb-label{font-size:0.78rem;width:130px;flex-shrink:0;display:flex;align-items:center;gap:5px}
+    .mb-bar-w{flex:1;background:var(--surface2);border-radius:4px;height:10px;overflow:hidden}
+    .mb-bar{height:100%;border-radius:4px;transition:width .4s}
+    .mb-cnt{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);width:28px;text-align:right}
+    .mb-pct{font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);width:36px;text-align:right}
+    .streak-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+    .s-dot{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;background:var(--surface2);border:1px solid var(--border)}
+    .s-dot .sd{font-size:0.55rem;color:var(--muted);font-family:'DM Mono',monospace}
+    .s-dot .sc{font-size:0.6rem;font-weight:600;color:var(--muted)}
+    .s-dot.on{background:var(--teal);border-color:var(--teal)} .s-dot.on .sd,.s-dot.on .sc{color:#fff}
+    .s-dot.now{background:var(--amber);border-color:var(--amber)} .s-dot.now .sd,.s-dot.now .sc{color:#fff}
+    .topic-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+    .t-name{font-size:0.78rem;width:165px;flex-shrink:0}
+    .t-bar-w{flex:1;background:var(--surface2);border-radius:4px;height:9px;overflow:hidden}
+    .t-bar{height:100%;border-radius:4px;transition:width .4s}
+    .t-cnt{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);width:26px;text-align:right}
+    .t-trend{font-size:0.72rem;width:18px;text-align:center}
+    .r-chip{display:inline-flex;align-items:center;gap:5px;background:var(--red-l);color:var(--red);border:1px solid #f0c0c0;border-radius:20px;padding:4px 10px;font-size:0.76rem;font-weight:500;margin:3px 3px 3px 0}
+    .log-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+    .add-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+    .add-title{font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:14px}
+    .fgroup{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+    .fgroup label{font-size:0.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    select,textarea,input{font-family:'Plus Jakarta Sans',sans-serif;font-size:0.875rem;border:1.5px solid var(--border);border-radius:6px;padding:8px 11px;background:var(--bg);color:var(--ink);outline:none;transition:border-color .15s;width:100%}
+    select:focus,textarea:focus,input:focus{border-color:var(--teal)}
+    textarea{resize:vertical;min-height:100px}
+    .detect-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;font-size:0.8rem;min-height:38px;flex-wrap:wrap}
+    .d-label{font-family:'DM Mono',monospace;font-size:0.63rem;color:var(--muted);white-space:nowrap}
+    .d-tag{font-size:0.75rem;font-weight:600;padding:2px 9px;border-radius:3px}
+    .d-conf{font-size:0.67rem;color:var(--muted)}
+    .d-spin{font-size:0.75rem;color:var(--muted);animation:spin .8s linear infinite;display:inline-block}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    .d-override{font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--teal);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;white-space:nowrap;margin-left:auto}
+    .d-override:hover{color:#095a5e}
+    .d-manual-select{font-family:'Plus Jakarta Sans',sans-serif;font-size:0.78rem;border:1.5px solid var(--teal);border-radius:5px;padding:4px 8px;background:var(--surface);color:var(--ink);outline:none;cursor:pointer;margin-left:auto}
+    .d-manual-badge{font-size:0.67rem;color:var(--muted);font-style:italic}
+    .add-btn{width:100%;padding:11px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.875rem;font-weight:600;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .add-btn:hover{background:#095a5e}
+    .add-btn:disabled{opacity:.4;cursor:not-allowed}
+    .err-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    .err-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;animation:fadeUp .2s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+    .etag{font-family:'DM Mono',monospace;font-size:0.6rem;padding:3px 7px;border-radius:3px;font-weight:500;white-space:nowrap;margin-top:2px}
+    .etag-quant{background:var(--amber-l);color:var(--amber)}
+    .etag-verbal{background:var(--teal-l);color:var(--teal)}
+    .err-q{font-size:0.84rem;line-height:1.5;margin-bottom:3px;white-space:pre-wrap}
+    .err-meta{font-size:0.7rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+    .mt-badge{font-size:0.65rem;padding:1px 7px;border-radius:3px;font-weight:500}
+    .err-words{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+    .word-pill{font-size:0.7rem;padding:2px 8px;background:var(--purple-l);color:var(--purple);border-radius:3px;font-family:'DM Mono',monospace}
+    .del-btn{background:none;border:none;cursor:pointer;color:var(--border);font-size:.95rem;transition:color .15s;padding:2px;margin-top:1px}
+    .del-btn:hover{color:var(--red)}
+    .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:0.84rem;border:1.5px dashed var(--border);border-radius:10px}
+    .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
+    .sb-title{font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+    .ts-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:0.82rem}
+    .ts-row:last-child{border-bottom:none}
+    .ts-num{font-family:'DM Mono',monospace;font-weight:500}
+    .report-btn{width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'Fraunces',serif;font-size:1rem;cursor:pointer;transition:opacity .15s;margin-bottom:10px}
+    .report-btn:hover{opacity:.85}
+    .report-btn:disabled{opacity:.35;cursor:not-allowed}
+    .report-btn.loading{animation:pulse 1s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+    .report-out{background:var(--surface);border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;margin-top:16px;animation:fadeUp .3s ease}
+    .r-hdr{background:var(--ink);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+    .r-hdr-title{font-family:'Fraunces',serif;font-size:1rem}
+    .r-hdr-date{font-family:'DM Mono',monospace;font-size:0.67rem;opacity:.5}
+    .r-body{padding:20px}
+    .rsec{margin-bottom:20px}
+    .rsec:last-child{margin-bottom:0}
+    .rsec-title{font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--surface2)}
+    .rsec-text{font-size:0.87rem;line-height:1.75;white-space:pre-wrap}
+    .pchip{display:inline-block;background:var(--red-l);color:var(--red);border-radius:4px;padding:3px 9px;font-size:0.76rem;margin:3px 3px 3px 0;font-weight:500}
+    .pq{background:var(--surface2);border-left:3px solid var(--teal);border-radius:0 6px 6px 0;padding:11px 14px;margin-bottom:8px;font-size:0.84rem;line-height:1.6;white-space:pre-wrap}
+    .tmrw{background:var(--teal-l);border:1px solid var(--teal);border-radius:8px;padding:13px 15px;font-size:0.87rem;line-height:1.75;white-space:pre-wrap}
+    .word-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .word-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;transition:box-shadow .15s}
+    .word-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.07)}
+    .wc-word{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;margin-bottom:2px}
+    .wc-pos{font-size:0.7rem;color:var(--muted);font-style:italic;margin-bottom:8px;font-family:'DM Mono',monospace}
+    .wc-def{font-size:0.83rem;line-height:1.55;margin-bottom:8px}
+    .wc-ex{font-size:0.8rem;line-height:1.5;color:var(--muted);font-style:italic;border-left:2px solid var(--teal-l);padding-left:10px}
+    .wc-seen{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);margin-top:8px}
+    .wc-del{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--border);font-size:.85rem;transition:color .15s}
+    .wc-del:hover{color:var(--red)}
+    .word-card.mastered{opacity:.5;background:var(--surface2)}
+    .wc-master{position:absolute;bottom:10px;right:10px;background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:0.68rem;cursor:pointer;color:var(--muted);transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif}
+    .wc-master:hover{background:var(--green-l);color:var(--green);border-color:var(--green)}
+    .word-card.mastered .wc-master{background:var(--green-l);color:var(--green);border-color:var(--green)}
+    .wc-count{display:inline-flex;align-items:center;gap:3px;background:var(--red-l);color:var(--red);border-radius:3px;padding:1px 6px;font-size:0.65rem;font-family:'DM Mono',monospace;margin-left:6px}
+    .word-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+    .wf-btn{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 12px;font-size:0.76rem;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;color:var(--ink)}
+    .wf-btn.active{background:var(--purple);border-color:var(--purple);color:#fff}
+    .word-empty{text-align:center;padding:40px;color:var(--muted);font-size:0.84rem;border:1.5px dashed var(--border);border-radius:10px}
+    .hist-item{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+    .hist-hdr{padding:11px 15px;background:var(--surface2);cursor:pointer;display:flex;justify-content:space-between;font-size:0.82rem;user-select:none}
+    .hist-hdr:hover{background:var(--border)}
+    .hist-body{padding:14px 15px;font-size:0.82rem;line-height:1.75;white-space:pre-wrap;background:var(--surface)}
+    .chevron{transition:transform .2s;font-size:.7rem}
+    .chevron.open{transform:rotate(180deg)}
+    .weekly-btn{width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.875rem;font-weight:600;cursor:pointer;transition:opacity .15s;margin-bottom:12px}
+    .weekly-btn:hover{opacity:.85}
+    .weekly-btn:disabled{opacity:.35;cursor:not-allowed}
+    .weekly-out{background:var(--purple-l);border:1px solid var(--purple);border-radius:10px;padding:18px;margin-top:8px}
+    .weekly-title{font-family:'Fraunces',serif;font-size:1rem;color:var(--purple);margin-bottom:10px}
+    .weekly-text{font-size:0.85rem;line-height:1.75;white-space:pre-wrap}
+    .toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:0.83rem;animation:fadeUp .25s ease;z-index:999}
+
+    /* AUTH SCREEN */
+    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px;width:100%;max-width:400px;text-align:center}
+    .auth-title{font-family:'Fraunces',serif;font-size:2rem;font-weight:600;margin-bottom:6px}
+    .auth-title span{color:var(--teal);font-style:italic}
+    .auth-sub{font-size:0.84rem;color:var(--muted);margin-bottom:32px}
+    .auth-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);outline:none;margin-bottom:10px;transition:border-color .15s}
+    .auth-input:focus{border-color:var(--teal)}
+    .auth-btn{width:100%;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s;margin-bottom:8px}
+    .auth-btn:hover{background:#095a5e}
+    .auth-btn:disabled{opacity:.4;cursor:not-allowed}
+    .auth-switch{font-size:0.8rem;color:var(--muted);margin-top:12px}
+    .auth-switch button{background:none;border:none;color:var(--teal);cursor:pointer;font-size:0.8rem;text-decoration:underline;font-family:'Plus Jakarta Sans',sans-serif}
+    .auth-err{font-size:0.8rem;color:var(--red);margin-bottom:8px;background:var(--red-l);padding:8px 12px;border-radius:6px}
+    .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:1.2rem;color:var(--muted)}
+
+    @media(max-width:720px){.stat-grid{grid-template-columns:repeat(2,1fr)}.chart-grid-2{grid-template-columns:1fr}.log-grid{grid-template-columns:1fr}.word-grid{grid-template-columns:1fr}.mistake-grid{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  // ── CONFIG — fill these in ─────────────────────────────
+  const SUPABASE_URL = "https://xalowhixphoijdwgobkh.supabase.co/";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhbG93aGl4cGhvaWpkd2dvYmtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxODkxNTEsImV4cCI6MjA4Nzc2NTE1MX0._1QyZlygfQ_K2MG9VC3i0dO4EVF2ZTwxHcvV-VC_4Lo";
+  const ANTHROPIC_API_KEY = "XBZlkeFZ1QYkfytx7ssBb_I44gKCektYuVEm8ZCjlkIxa9LlMAvy_fZ5W9awibWpwhbvztRLIN65jabbSUVlXw-FqJcFwAA";
+  // ──────────────────────────────────────────────────────
+</script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+const { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } = Recharts;
+
+// Init Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Mistake types ──────────────────────────────────────
+const MISTAKE_TYPES = [
+  { v:"silly",   icon:"🔢", name:"Silly / Calc",  desc:"Arithmetic slip, wrong sign",      color:"#c45c0a", light:"#fde8d0" },
+  { v:"misread", icon:"👁️", name:"Misread",        desc:"Wrong value, missed NOT/least",    color:"#8b2525", light:"#faeaea" },
+  { v:"setup",   icon:"📐", name:"Setup Error",   desc:"Wrong equation or diagram setup",  color:"#b8730a", light:"#fdf0d8" },
+  { v:"concept", icon:"🧠", name:"Conceptual",    desc:"Didn't know the method/formula",   color:"#4a3585", light:"#ece8f8" },
+  { v:"time",    icon:"⏱️", name:"Time Pressure", desc:"Rushed, knew how but slipped",     color:"#1a4f8a", light:"#e0eaf8" },
+];
+
+const MISTAKE_TIPS = {
+  silly:   { title:"Silly / Calculation errors",  tip:"Write every arithmetic step on paper — never do it in your head. After getting an answer, spend 10 seconds verifying by plugging it back into the original equation.", action:"Practice: redo your last 5 wrong Qs with every step written out." },
+  misread: { title:"Misreading the question",     tip:"Before solving anything, circle or underline the key constraint — especially words like NOT, least, greatest, integer, positive. Re-read the question after getting your answer.", action:"Practice: cover the answer choices and write in your own words what the question is asking. Then solve." },
+  setup:   { title:"Setup errors",                tip:"You know the concept but are translating it wrong into math. Draw a diagram or write out what each variable represents before touching numbers.", action:"Practice: for every wrong Q, identify exactly where your setup diverged from the correct one." },
+  concept: { title:"Conceptual gaps",             tip:"Don't just move on — flag the topic and spend 15 minutes revisiting the specific concept from your Gregmat notes before your next session.", action:"Practice: write 2-3 similar questions yourself from scratch. If you can write the question, you understand the concept." },
+  time:    { title:"Time pressure errors",        tip:"The GRE rewards accuracy over speed — a slow correct answer beats a fast wrong one. Take one deep breath before the last step of any calculation.", action:"Practice: do 10-question sets with 2 min/Q instead of 1.5 min/Q. Build accuracy first, then tighten the time." },
+};
+
+const SUBJECTS = [
+  {v:"quant-algebra",  l:"Algebra",           tag:"quant"},
+  {v:"quant-wordprob", l:"Word Problems",      tag:"quant"},
+  {v:"quant-geometry", l:"Geometry",           tag:"quant"},
+  {v:"quant-stats",    l:"Statistics / DI",    tag:"quant"},
+  {v:"quant-arith",    l:"Arithmetic",         tag:"quant"},
+  {v:"quant-prob",     l:"Probability",        tag:"quant"},
+  {v:"quant-coord",    l:"Coordinate Geo",     tag:"quant"},
+  {v:"quant-qc",       l:"Quant Comparison",   tag:"quant"},
+  {v:"verbal-tc",      l:"Text Completion",    tag:"verbal"},
+  {v:"verbal-se",      l:"Sentence Equiv.",    tag:"verbal"},
+  {v:"verbal-rc",      l:"Reading Comp.",      tag:"verbal"},
+];
+
+const TAG_COLOR = {quant:"#b8730a", verbal:"#0b6b6f"};
+const subInfo  = v => SUBJECTS.find(s=>s.v===v) || {l:v, tag:"quant"};
+const mtInfo   = v => MISTAKE_TYPES.find(m=>m.v===v);
+const fmtDate  = ts => new Date(ts).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+const fmtTime  = ts => new Date(ts).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+const todayStr = () => new Date().toDateString();
+const daysLeft = () => Math.max(0, Math.ceil((new Date("2026-04-27") - new Date()) / 86400000));
+const isVocabQ = v => v==="verbal-tc" || v==="verbal-se";
+const isQuantQ = v => v && v.startsWith("quant");
+
+async function callClaude(prompt, maxTokens=800) {
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body: JSON.stringify({model:"claude-sonnet-4-20250514", max_tokens:maxTokens, messages:[{role:"user",content:prompt}]})
+  });
+  const d = await r.json();
+  return d.content?.[0]?.text || "";
+}
+
+async function detectTopic(text) {
+  if (!text || text.trim().length < 15) return null;
+  const prompt = `Classify this GRE question. Reply with ONLY the exact value, nothing else.
+quant-algebra, quant-wordprob, quant-geometry, quant-stats, quant-arith, quant-prob, quant-coord, quant-qc, verbal-tc, verbal-se, verbal-rc
+Rules: quant-qc=Quantity A vs B. verbal-tc=1-3 blanks one word each. verbal-se=one blank needs two matching words. verbal-rc=reading passage.
+Question: """${text.slice(0,500)}"""`;
+  try {
+    const raw = (await callClaude(prompt, 30)).trim().toLowerCase().replace(/[^a-z-]/g,"");
+    return SUBJECTS.find(s=>s.v===raw) ? raw : null;
+  } catch { return null; }
+}
+
+async function extractVocabWords(questionText) {
+  const prompt = `Extract difficult GRE vocabulary words from this TC/SE question's answer choices.
+Question: """${questionText.slice(0,800)}"""
+Reply ONLY in this exact JSON format, no other text:
+[{"word":"truculent","pos":"adjective","definition":"Eager to argue or fight; aggressively defiant.","example":"The truculent lawyer challenged every piece of evidence presented."}]
+Include 3-6 genuinely difficult GRE-level words only. Skip common words.`;
+  try {
+    const raw = await callClaude(prompt, 500);
+    const clean = raw.replace(/```json|```/g,"").trim();
+    const s=clean.indexOf("["), e=clean.lastIndexOf("]");
+    if(s===-1||e===-1) return [];
+    return JSON.parse(clean.slice(s,e+1));
+  } catch { return []; }
+}
+
+// ── Auth Screen ────────────────────────────────────────
+function AuthScreen({ onAuth }) {
+  const [mode, setMode]       = useState("login"); // login | signup
+  const [email, setEmail]     = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+
+  async function handleSubmit() {
+    if (!email || !password) return;
+    setLoading(true); setError("");
+    try {
+      let result;
+      if (mode === "login") {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      } else {
+        result = await supabase.auth.signUp({ email, password });
+      }
+      if (result.error) setError(result.error.message);
+      else if (mode === "signup") setError("Check your email to confirm your account, then log in.");
+    } catch(e) { setError("Something went wrong. Try again."); }
+    setLoading(false);
+  }
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-card">
+        <div className="auth-title">GRE <span>Analyser</span></div>
+        <div className="auth-sub">{mode==="login" ? "Log in to your account" : "Create your account"}</div>
+        {error && <div className="auth-err">{error}</div>}
+        <input className="auth-input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} />
+        <input className="auth-input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} />
+        <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
+          {loading ? "..." : mode==="login" ? "Log In" : "Create Account"}
+        </button>
+        <div className="auth-switch">
+          {mode==="login" ? <>Don't have an account? <button onClick={()=>{setMode("signup");setError("");}}>Sign up</button></> : <>Already have an account? <button onClick={()=>{setMode("login");setError("");}}>Log in</button></>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ───────────────────────────────────────────
+function App() {
+  const [session, setSession]   = useState(undefined); // undefined=loading, null=not authed
+  const [tab, setTab]           = useState("log");
+  const [errors, setErrors]     = useState([]);
+  const [history, setHistory]   = useState([]);
+  const [wordList, setWordList] = useState([]);
+  const [loading, setLoading]   = useState(true);
+
+  const [question, setQuestion]         = useState("");
+  const [note, setNote]                 = useState("");
+  const [detectedSubject, setDetectedSubject] = useState(null);
+  const [manualSubject, setManualSubject]     = useState(null);
+  const [showManualSelect, setShowManualSelect] = useState(false);
+  const [selectedMistakeType, setSelectedMistakeType] = useState(null);
+  const [detecting, setDetecting]       = useState(false);
+  const [extractingWords, setExtractingWords] = useState(false);
+  const detectTimer = useRef(null);
+
+  const effectiveSubject = manualSubject || detectedSubject;
+
+  const [report, setReport]             = useState(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [weeklyReport, setWeeklyReport]   = useState("");
+  const [loadingWeekly, setLoadingWeekly] = useState(false);
+  const [openHist, setOpenHist]         = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [toast, setToast]               = useState("");
+  const [wordFilter, setWordFilter]     = useState("all");
+  const [wordSearch, setWordSearch]     = useState("");
+  const reportRef = useRef(null);
+
+  // Auth listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({data:{session}}) => setSession(session));
+    const {data:{subscription}} = supabase.auth.onAuthStateChange((_,session) => setSession(session));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load data from Supabase when session exists
+  useEffect(() => {
+    if (!session) { setLoading(false); return; }
+    loadAllData();
+  }, [session]);
+
+  async function loadAllData() {
+    setLoading(true);
+    const uid = session.user.id;
+    try {
+      const [errRes, histRes, wordRes] = await Promise.all([
+        supabase.from("errors").select("*").eq("user_id", uid).eq("date_str", todayStr()).order("created_at", {ascending:false}),
+        supabase.from("history").select("*").eq("user_id", uid).order("created_at", {ascending:false}),
+        supabase.from("word_list").select("*").eq("user_id", uid).order("created_at", {ascending:false}),
+      ]);
+      if (errRes.data)  setErrors(errRes.data.map(e=>({...e, extractedWords: e.extracted_words||[], mistakeType: e.mistake_type, autoDetected: e.auto_detected, dateStr: e.date_str})));
+      if (histRes.data) setHistory(histRes.data.map(h=>({...h, errorCount: h.error_count, dateStr: h.date_str, errors: h.errors||[], report: h.report||{}})));
+      if (wordRes.data) setWordList(wordRes.data.map(w=>({...w, seenCount: w.seen_count, fromQuestion: w.from_question, addedTs: new Date(w.created_at).getTime()})));
+    } catch(e) { console.error(e); }
+    setLoading(false);
+  }
+
+  function showToast(msg) { setToast(msg); setTimeout(()=>setToast(""),2800); }
+
+  // Auto-detect
+  useEffect(() => {
+    clearTimeout(detectTimer.current);
+    if (question.trim().length < 20) { setDetectedSubject(null); setManualSubject(null); setShowManualSelect(false); setSelectedMistakeType(null); return; }
+    setDetecting(true);
+    detectTimer.current = setTimeout(async () => {
+      const result = await detectTopic(question);
+      setDetectedSubject(result);
+      setDetecting(false);
+    }, 1200);
+    return () => clearTimeout(detectTimer.current);
+  }, [question]);
+
+  useEffect(() => { setSelectedMistakeType(null); }, [detectedSubject, manualSubject]);
+
+  async function addError() {
+    if (!question.trim() || !session) return;
+    const subject = effectiveSubject || "quant-wordprob";
+    const uid = session.user.id;
+    const newErr = {
+      user_id: uid, subject, question: question.trim(), note: note.trim(),
+      mistake_type: isQuantQ(subject) ? (selectedMistakeType||null) : null,
+      auto_detected: !!detectedSubject,
+      extracted_words: [],
+      date_str: todayStr(),
+    };
+    const {data, error} = await supabase.from("errors").insert(newErr).select().single();
+    if (error) { showToast("Error saving — try again"); return; }
+    const mapped = {...data, mistakeType:data.mistake_type, autoDetected:data.auto_detected, extractedWords:[], dateStr:data.date_str};
+    setErrors(prev=>[mapped,...prev]);
+    setQuestion(""); setNote(""); setDetectedSubject(null); setManualSubject(null); setShowManualSelect(false); setSelectedMistakeType(null);
+    showToast("Logged ✓");
+
+    if (isVocabQ(subject)) {
+      setExtractingWords(true);
+      showToast("Extracting vocabulary words...");
+      try {
+        const words = await extractVocabWords(mapped.question);
+        if (words?.length > 0) {
+          const wordInserts = [];
+          const updatedWordList = [...wordList];
+          for (const w of words) {
+            const ex = updatedWordList.find(e=>e.word.toLowerCase()===w.word.toLowerCase());
+            if (ex) {
+              await supabase.from("word_list").update({seen_count: (ex.seenCount||1)+1}).eq("id", ex.id);
+              ex.seenCount = (ex.seenCount||1)+1;
+            } else {
+              wordInserts.push({user_id:uid, word:w.word, pos:w.pos, definition:w.definition, example:w.example, seen_count:1, mastered:false, from_question:mapped.question.slice(0,120)});
+            }
+          }
+          if (wordInserts.length > 0) {
+            const {data:inserted} = await supabase.from("word_list").insert(wordInserts).select();
+            if (inserted) inserted.forEach(w=>updatedWordList.unshift({...w, seenCount:w.seen_count, fromQuestion:w.from_question, addedTs:new Date(w.created_at).getTime()}));
+          }
+          setWordList(updatedWordList);
+          const wordNames = words.map(w=>w.word);
+          await supabase.from("errors").update({extracted_words: wordNames}).eq("id", mapped.id);
+          setErrors(prev=>prev.map(e=>e.id===mapped.id?{...e,extractedWords:wordNames}:e));
+          showToast(`${words.length} vocab words extracted ✓`);
+        }
+      } catch { showToast("Logged (vocab extraction failed)"); }
+      setExtractingWords(false);
+    }
+  }
+
+  async function delError(id) {
+    await supabase.from("errors").delete().eq("id", id);
+    setErrors(prev=>prev.filter(e=>e.id!==id));
+  }
+
+  async function clearAll() {
+    if (!confirmClear) { setConfirmClear(true); setTimeout(()=>setConfirmClear(false),3000); return; }
+    await supabase.from("errors").delete().eq("user_id", session.user.id).eq("date_str", todayStr());
+    setErrors([]); setConfirmClear(false); showToast("Cleared");
+  }
+
+  async function toggleMastered(id) {
+    const w = wordList.find(w=>w.id===id);
+    if (!w) return;
+    await supabase.from("word_list").update({mastered:!w.mastered}).eq("id", id);
+    setWordList(prev=>prev.map(w=>w.id===id?{...w,mastered:!w.mastered}:w));
+  }
+
+  async function deleteWord(id) {
+    await supabase.from("word_list").delete().eq("id", id);
+    setWordList(prev=>prev.filter(w=>w.id!==id));
+  }
+
+  async function generateReport() {
+    if (!errors.length || !session) return;
+    setLoadingReport(true); setReport(null);
+    const list = errors.map((e,i) => {
+      const mt = e.mistakeType ? ` [Mistake type: ${mtInfo(e.mistakeType)?.name}]` : "";
+      return `${i+1}. [${subInfo(e.subject).l}]${mt}\nQuestion: ${e.question.slice(0,300)}${e.note?`\nNote: ${e.note}`:""}`;
+    }).join("\n\n");
+    const qBreakdown = MISTAKE_TYPES.map(mt=>{const c=errors.filter(e=>e.mistakeType===mt.v).length;return c>0?`${mt.name}: ${c}`:null;}).filter(Boolean).join(", ");
+    const prompt = `You are a GRE tutor analysing a student's daily wrong questions. Target: 170Q and 165+V.
+Wrong questions today:\n${list}${qBreakdown?`\nQuant mistake type breakdown: ${qBreakdown}`:""}
+For TC/SE, vocab extracted separately — focus on strategy gaps. For quant, distinguish silly vs conceptual.
+Respond in EXACTLY this format:
+PATTERNS:\n2-4 specific weak patterns. Name the exact gap.
+CONCEPT_GAPS:\nFor each gap: 1-2 sentences on the missing concept.
+PRACTICE_QUESTIONS:\n3-5 fresh GRE-style questions targeting weak areas. Full questions with answer choices.
+TOMORROW:\n3-4 specific actionable bullet points for tomorrow.`;
+    try {
+      const raw = await callClaude(prompt, 1000);
+      const extract = (lbl,nxt) => { const s=raw.indexOf(`${lbl}:`);if(s===-1)return "";const cs=s+lbl.length+1;const ns=nxt?raw.indexOf(`${nxt}:`,cs):-1;return(ns===-1?raw.slice(cs):raw.slice(cs,ns)).trim(); };
+      const parsed = { patterns:extract("PATTERNS","CONCEPT_GAPS"), concepts:extract("CONCEPT_GAPS","PRACTICE_QUESTIONS"), practice:extract("PRACTICE_QUESTIONS","TOMORROW"), tomorrow:extract("TOMORROW",null), date:Date.now(), errorCount:errors.length, rawText:raw };
+      setReport(parsed);
+      const dateStr = todayStr();
+      const existing = history.find(h=>h.dateStr===dateStr);
+      const histEntry = {
+        user_id: session.user.id, date_str: dateStr,
+        error_count: (existing?.errorCount||0) + errors.length,
+        errors: [...(existing?.errors||[]), ...errors],
+        report: parsed,
+      };
+      const {data:savedHist} = existing
+        ? await supabase.from("history").update({error_count:histEntry.error_count, errors:histEntry.errors, report:histEntry.report}).eq("id",existing.id).select().single()
+        : await supabase.from("history").insert(histEntry).select().single();
+      if (savedHist) {
+        const mapped = {...savedHist, errorCount:savedHist.error_count, dateStr:savedHist.date_str, errors:savedHist.errors||[], report:savedHist.report||{}};
+        setHistory(prev=>[mapped,...prev.filter(h=>h.dateStr!==dateStr)]);
+      }
+      await supabase.from("errors").delete().eq("user_id",session.user.id).eq("date_str",dateStr);
+      setErrors([]);
+      setTimeout(()=>reportRef.current?.scrollIntoView({behavior:"smooth"}),150);
+    } catch { showToast("Error — try again"); }
+    setLoadingReport(false);
+  }
+
+  async function generateWeekly() {
+    if (!history.length) return;
+    setLoadingWeekly(true); setWeeklyReport("");
+    const last7 = history.slice(0,7);
+    const summaries = last7.map(h=>`Date: ${fmtDate(h.date||h.created_at)} | Errors: ${h.errorCount}\nPatterns: ${h.report?.patterns?.slice(0,200)||"N/A"}`).join("\n\n---\n\n");
+    try {
+      const text = await callClaude(`GRE weekly review. Target 170Q/165+V.\n${summaries}\nWrite: PROGRESS, PERSISTENT WEAKNESSES, MOST IMPROVED, NEXT WEEK. Under 260 words. Specific and honest.`, 700);
+      setWeeklyReport(text);
+    } catch { showToast("Error — try again"); }
+    setLoadingWeekly(false);
+  }
+
+  // ── Analytics ────────────────────────────────────────
+  const allErrors   = history.flatMap(h=>h.errors||[]);
+  const totalLogged = allErrors.length + errors.length;
+  const topicCounts = SUBJECTS.reduce((acc,s)=>{ acc[s.v]=allErrors.filter(e=>e.subject===s.v).length; return acc; },{});
+  const topicsSorted = [...SUBJECTS].sort((a,b)=>(topicCounts[b.v]||0)-(topicCounts[a.v]||0)).filter(s=>topicCounts[s.v]>0);
+  const maxCount    = Math.max(1,...Object.values(topicCounts));
+  const last3E = history.slice(0,3).flatMap(h=>h.errors||[]);
+  const prev3E = history.slice(3,6).flatMap(h=>h.errors||[]);
+  const trend  = v => { const r=last3E.filter(e=>e.subject===v).length,p=prev3E.filter(e=>e.subject===v).length; if(!p&&!r)return "—";if(r<p)return "↓";if(r>p)return "↑";return "→"; };
+  const dailyChart = [...history].reverse().slice(-14).map(h=>({ date:fmtDate(h.date||h.created_at), Total:h.errorCount||0, Quant:(h.errors||[]).filter(e=>subInfo(e.subject).tag==="quant").length, Verbal:(h.errors||[]).filter(e=>subInfo(e.subject).tag==="verbal").length }));
+  const qTotal  = allErrors.filter(e=>subInfo(e.subject).tag==="quant").length;
+  const vTotal  = allErrors.filter(e=>subInfo(e.subject).tag==="verbal").length;
+  const pieData = [{name:"Quant",value:qTotal},{name:"Verbal",value:vTotal}].filter(d=>d.value>0);
+  const allQuantErrors = allErrors.filter(e=>isQuantQ(e.subject));
+  const mistakeCounts  = MISTAKE_TYPES.reduce((acc,mt)=>{ acc[mt.v]=allQuantErrors.filter(e=>e.mistakeType===mt.v).length; return acc; },{});
+  const totalTagged    = Object.values(mistakeCounts).reduce((a,b)=>a+b,0);
+  const topMistake     = totalTagged>0 ? MISTAKE_TYPES.slice().sort((a,b)=>(mistakeCounts[b.v]||0)-(mistakeCounts[a.v]||0))[0] : null;
+  const reportDays = new Set(history.map(h=>h.dateStr));
+  const curStreak  = (()=>{ let s=0,d=new Date(); while(reportDays.has(d.toDateString())){s++;d.setDate(d.getDate()-1);} return s; })();
+  const longStreak = (()=>{ const s=[...history].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); let m=0,c=0; for(let i=0;i<s.length;i++){c=(i>0&&(new Date(s[i].created_at)-new Date(s[i-1].created_at))/86400000<=1.5)?c+1:1;m=Math.max(m,c);} return m; })();
+  const streakDots = Array.from({length:28},(_,i)=>{ const d=new Date();d.setDate(d.getDate()-27+i);const ds=d.toDateString();const h=history.find(h=>h.dateStr===ds);return{day:d.getDate(),ds,active:!!h,today:ds===todayStr(),count:h?.errorCount||0}; });
+  const recurring  = SUBJECTS.filter(s=>history.filter(h=>(h.errors||[]).some(e=>e.subject===s.v)).length>=3);
+  const thisW = s => history.slice(0,7).flatMap(h=>h.errors||[]).filter(e=>e.subject===s).length;
+  const lastW = s => history.slice(7,14).flatMap(h=>h.errors||[]).filter(e=>e.subject===s).length;
+  const mostImproved = [...SUBJECTS].filter(s=>lastW(s.v)>0&&thisW(s.v)<lastW(s.v)).sort((a,b)=>(lastW(b.v)-thisW(b.v))-(lastW(a.v)-thisW(a.v)))[0];
+  const biggestWeak  = topicsSorted[0];
+  const unmasteredCount = wordList.filter(w=>!w.mastered).length;
+  const filteredWords = wordList.filter(w=>{ if(wordFilter==="mastered")return w.mastered; if(wordFilter==="unmastered")return !w.mastered; return true; }).filter(w=>!wordSearch||w.word.toLowerCase().includes(wordSearch.toLowerCase())||w.definition.toLowerCase().includes(wordSearch.toLowerCase()));
+  const topWords = [...wordList].sort((a,b)=>(b.seenCount||1)-(a.seenCount||1)).slice(0,5);
+  const todayQ = errors.filter(e=>isQuantQ(e.subject)).length;
+  const todayV = errors.filter(e=>!isQuantQ(e.subject)).length;
+
+  // ── Render ────────────────────────────────────────────
+  if (session === undefined || loading) return <div className="loading-screen">Loading...</div>;
+  if (!session) return <AuthScreen />;
+
+  return (
+    <>
+      <nav className="nav">
+        <div className="nav-brand">GRE <span>Analyser</span></div>
+        <div className="nav-tabs">
+          {[["log","📋 Log"],["vocab","📚 My Words"],["dashboard","📊 Dashboard"],["history","📅 History"]].map(([t,l])=>(
+            <button key={t} className={`nav-tab${tab===t?" active":""}`} onClick={()=>setTab(t)}>
+              {l}{t==="vocab"&&unmasteredCount>0&&<span style={{marginLeft:5,background:"var(--red)",color:"#fff",borderRadius:10,padding:"0 5px",fontSize:"0.65rem"}}>{unmasteredCount}</span>}
+            </button>
+          ))}
+        </div>
+        <div className="nav-right">
+          <span>{daysLeft()} days to exam</span>
+          <button className="signout-btn" onClick={()=>supabase.auth.signOut()}>Sign out</button>
+        </div>
+      </nav>
+
+      {tab==="log" && (
+        <div className="page">
+          <div className="sec-title">Today's Error Log</div>
+          <div className="sec-sub">Paste any wrong question. Topic auto-detected. For quant, tag your mistake type.</div>
+          <div className="log-grid">
+            <div>
+              <div className="add-card">
+                <div className="add-title">Log a wrong question</div>
+                <div className="fgroup">
+                  <label>Paste the full question + answer choices</label>
+                  <textarea placeholder="Paste the question here..." value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.ctrlKey&&e.key==="Enter")addError();}} style={{minHeight:110}} />
+                </div>
+                <div className="detect-bar">
+                  <span className="d-label">TOPIC:</span>
+                  {detecting ? <><span className="d-spin">◌</span><span style={{fontSize:"0.74rem",color:"var(--muted)"}}>detecting...</span></>
+                  : manualSubject ? <>
+                    <span className="d-tag" style={{background:TAG_COLOR[subInfo(manualSubject).tag]+"22",color:TAG_COLOR[subInfo(manualSubject).tag]}}>{subInfo(manualSubject).tag==="quant"?"Quant":"Verbal"} — {subInfo(manualSubject).l}</span>
+                    <span className="d-manual-badge">manual</span>
+                    {isVocabQ(manualSubject)&&<span style={{fontSize:"0.7rem",color:"var(--purple)"}}>📚 vocab will be extracted</span>}
+                  </>
+                  : detectedSubject ? <>
+                    <span className="d-tag" style={{background:TAG_COLOR[subInfo(detectedSubject).tag]+"22",color:TAG_COLOR[subInfo(detectedSubject).tag]}}>{subInfo(detectedSubject).tag==="quant"?"Quant":"Verbal"} — {subInfo(detectedSubject).l}</span>
+                    <span className="d-conf">auto ✓</span>
+                    {isVocabQ(detectedSubject)&&<span style={{fontSize:"0.7rem",color:"var(--purple)"}}>📚 vocab will be extracted</span>}
+                  </>
+                  : question.trim().length>15 ? <span style={{color:"var(--muted)",fontSize:"0.74rem"}}>detecting...</span>
+                  : <span style={{color:"var(--muted)",fontSize:"0.74rem"}}>paste a question above</span>}
+                  {question.trim().length>15 && !detecting && (
+                    showManualSelect ? (
+                      <select className="d-manual-select" value={manualSubject||detectedSubject||""} onChange={e=>{setManualSubject(e.target.value||null);setShowManualSelect(false);}} onBlur={()=>setShowManualSelect(false)} autoFocus>
+                        <option value="">-- pick topic --</option>
+                        <optgroup label="Quant">{SUBJECTS.filter(s=>s.tag==="quant").map(s=><option key={s.v} value={s.v}>{s.l}</option>)}</optgroup>
+                        <optgroup label="Verbal">{SUBJECTS.filter(s=>s.tag==="verbal").map(s=><option key={s.v} value={s.v}>{s.l}</option>)}</optgroup>
+                      </select>
+                    ) : (
+                      <button className="d-override" onClick={()=>setShowManualSelect(true)}>{manualSubject?"change ✎":"override ✎"}</button>
+                    )
+                  )}
+                </div>
+                {effectiveSubject && isQuantQ(effectiveSubject) && (
+                  <div className="mistake-section">
+                    <span className="mistake-label">Why did you get this wrong?</span>
+                    <div className="mistake-grid">
+                      {MISTAKE_TYPES.map(mt=>(
+                        <button key={mt.v} className={`mt-btn${selectedMistakeType===mt.v?" selected":""}`} onClick={()=>setSelectedMistakeType(selectedMistakeType===mt.v?null:mt.v)}>
+                          <span className="mt-icon">{mt.icon}</span>
+                          <span className="mt-name">{mt.name}</span>
+                          <span className="mt-desc">{mt.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="fgroup">
+                  <label>Additional note (optional)</label>
+                  <input placeholder="e.g. forgot the formula, misread radius as diameter..." value={note} onChange={e=>setNote(e.target.value)} />
+                </div>
+                <button className="add-btn" onClick={addError} disabled={!question.trim()||detecting||extractingWords}>
+                  {extractingWords?"Extracting vocabulary...":detecting?"Detecting topic...":"+ Add to Log"}
+                  {!extractingWords&&!detecting&&<span style={{opacity:.6,fontSize:"0.72rem"}}>(Ctrl+Enter)</span>}
+                </button>
+              </div>
+
+              {errors.length===0 ? (
+                <div className="empty">No errors logged yet today.<br/><span style={{fontSize:"0.77rem"}}>Paste your first wrong question above.</span></div>
+              ) : (
+                <div className="err-list">
+                  {errors.map(e=>{
+                    const mt = e.mistakeType ? mtInfo(e.mistakeType) : null;
+                    return (
+                      <div key={e.id} className="err-item">
+                        <span className={`etag etag-${subInfo(e.subject).tag}`}>{subInfo(e.subject).tag.toUpperCase()}</span>
+                        <div>
+                          <div className="err-q">{e.question.slice(0,240)}{e.question.length>240?"…":""}</div>
+                          <div className="err-meta">
+                            <span>{subInfo(e.subject).l}</span>
+                            {e.autoDetected&&<span style={{color:"var(--green)"}}>·auto</span>}
+                            {mt&&<span className="mt-badge" style={{background:mt.light,color:mt.color}}>{mt.icon} {mt.name}</span>}
+                            {e.note&&<span>· <em>{e.note}</em></span>}
+                            <span>· {fmtTime(e.created_at||e.ts)}</span>
+                          </div>
+                          {e.extractedWords?.length>0&&<div className="err-words"><span style={{fontSize:"0.68rem",color:"var(--muted)"}}>words: </span>{e.extractedWords.map((w,i)=><span key={i} className="word-pill">{w}</span>)}</div>}
+                        </div>
+                        <button className="del-btn" onClick={()=>delError(e.id)}>✕</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {report && (
+                <div className="report-out" ref={reportRef}>
+                  <div className="r-hdr"><div className="r-hdr-title">Daily Analysis Report</div><div className="r-hdr-date">{fmtDate(report.date)} · {report.errorCount} errors</div></div>
+                  <div className="r-body">
+                    <div className="rsec"><div className="rsec-title">Weak Patterns</div>{report.patterns.split("\n").filter(l=>l.trim()).map((l,i)=><span key={i} className="pchip">{l.replace(/^[-•*\d.]+\s*/,"")}</span>)}</div>
+                    <div className="rsec"><div className="rsec-title">Concept Gaps</div><div className="rsec-text">{report.concepts}</div></div>
+                    <div className="rsec"><div className="rsec-title">Practice Questions</div>{report.practice.split(/\n(?=\d+[\.\)])/).filter(q=>q.trim()).map((q,i)=><div key={i} className="pq">{q.trim()}</div>)}</div>
+                    <div className="rsec"><div className="rsec-title">Focus for Tomorrow</div><div className="tmrw">{report.tomorrow}</div></div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="sidebar-card">
+                <div className="sb-title">Today so far</div>
+                <div className="ts-row"><span>Total logged</span><span className="ts-num">{errors.length}</span></div>
+                <div className="ts-row"><span>Quant</span><span className="ts-num c-amber">{todayQ}</span></div>
+                <div className="ts-row"><span>Verbal</span><span className="ts-num c-teal">{todayV}</span></div>
+                {MISTAKE_TYPES.map(mt=>{ const c=errors.filter(e=>e.mistakeType===mt.v).length; return c>0?<div key={mt.v} className="ts-row"><span style={{fontSize:"0.78rem"}}>{mt.icon} {mt.name}</span><span className="ts-num" style={{color:mt.color}}>{c}</span></div>:null; })}
+              </div>
+              <div className="sidebar-card">
+                <div className="sb-title">Streak</div>
+                <div style={{display:"flex",gap:20,marginBottom:10}}>
+                  <div><div style={{fontFamily:"'Fraunces',serif",fontSize:"1.8rem",color:"var(--teal)",lineHeight:1}}>{curStreak}</div><div style={{fontSize:"0.7rem",color:"var(--muted)"}}>current</div></div>
+                  <div><div style={{fontFamily:"'Fraunces',serif",fontSize:"1.8rem",color:"var(--amber)",lineHeight:1}}>{longStreak}</div><div style={{fontSize:"0.7rem",color:"var(--muted)"}}>longest</div></div>
+                </div>
+                <div className="streak-row">{streakDots.map((d,i)=><div key={i} className={`s-dot${d.active?" on":""}${d.today?" now":""}`} title={d.ds}><span className="sd">{d.day}</span>{d.active&&<span className="sc">{d.count}</span>}</div>)}</div>
+              </div>
+              <button className={`report-btn${loadingReport?" loading":""}`} onClick={generateReport} disabled={errors.length===0||loadingReport}>{loadingReport?"Analysing...":`Generate Report → ${errors.length} Q${errors.length!==1?"s":""}`}</button>
+              <div className="sidebar-card">
+                <div className="sb-title">All time</div>
+                <div className="ts-row"><span>Total errors</span><span className="ts-num">{totalLogged}</span></div>
+                <div className="ts-row"><span>Words in list</span><span className="ts-num c-purple">{wordList.length}</span></div>
+                <div className="ts-row"><span>Days to exam</span><span className="ts-num c-red">{daysLeft()}</span></div>
+                {topMistake&&<div className="ts-row"><span>Top mistake type</span><span className="ts-num" style={{color:topMistake.color,fontSize:"0.72rem"}}>{topMistake.icon} {topMistake.name}</span></div>}
+              </div>
+              {errors.length>0&&<button onClick={clearAll} style={{width:"100%",padding:"8px",background:"none",border:"1px solid var(--red)",color:"var(--red)",borderRadius:6,cursor:"pointer",fontSize:"0.77rem",fontFamily:"inherit"}}>{confirmClear?"Tap again to confirm":"Clear today's log"}</button>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab==="vocab" && (
+        <div className="page">
+          <div className="sec-title">My Vocabulary Word List</div>
+          <div className="sec-sub">{wordList.length} words · {unmasteredCount} to learn · {wordList.filter(w=>w.mastered).length} mastered</div>
+          {wordList.length===0 ? <div className="word-empty"><div style={{fontSize:"2rem",marginBottom:10,opacity:.4}}>📚</div><div>No words yet. Log a TC or SE question to extract vocab automatically.</div></div> : (<>
+            {topWords.some(w=>w.seenCount>1)&&<div className="card" style={{marginBottom:16}}><div className="card-title">🔁 Words appearing in multiple questions</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{topWords.filter(w=>w.seenCount>1).map(w=><span key={w.id} style={{background:"var(--red-l)",color:"var(--red)",border:"1px solid #f0c0c0",borderRadius:20,padding:"4px 12px",fontSize:"0.8rem",fontWeight:500}}>{w.word} <span style={{fontFamily:"'DM Mono',monospace",fontSize:"0.68rem",opacity:.8}}>×{w.seenCount}</span></span>)}</div></div>}
+            <input placeholder="Search words..." value={wordSearch} onChange={e=>setWordSearch(e.target.value)} style={{marginBottom:12}} />
+            <div className="word-filters">
+              {[["all","All words"],["unmastered","To learn"],["mastered","Mastered ✓"]].map(([f,l])=><button key={f} className={`wf-btn${wordFilter===f?" active":""}`} onClick={()=>setWordFilter(f)}>{l}</button>)}
+              <span style={{marginLeft:"auto",fontSize:"0.76rem",color:"var(--muted)",alignSelf:"center"}}>{filteredWords.length} words</span>
+            </div>
+            {filteredWords.length===0 ? <div className="word-empty">No words match.</div> : (
+              <div className="word-grid">{filteredWords.map(w=>(
+                <div key={w.id} className={`word-card${w.mastered?" mastered":""}`}>
+                  <button className="wc-del" onClick={()=>deleteWord(w.id)}>✕</button>
+                  <div className="wc-word">{w.word}{w.seenCount>1&&<span className="wc-count">×{w.seenCount}</span>}</div>
+                  <div className="wc-pos">{w.pos}</div>
+                  <div className="wc-def">{w.definition}</div>
+                  <div className="wc-ex">"{w.example}"</div>
+                  <div className="wc-seen">Added {fmtDate(w.addedTs)}</div>
+                  <button className="wc-master" onClick={()=>toggleMastered(w.id)}>{w.mastered?"✓ mastered":"mark mastered"}</button>
+                </div>
+              ))}</div>
+            )}
+          </>)}
+        </div>
+      )}
+
+      {tab==="dashboard" && (
+        <div className="page">
+          <div className="sec-title">Analytics Dashboard</div>
+          <div className="sec-sub">Performance trends, mistake patterns, and what to do about each one.</div>
+          {history.length===0 ? <div className="empty" style={{marginTop:40}}>No data yet. Log errors and generate your first report.</div> : (<>
+            <div className="stat-grid">
+              <div className="stat-card"><div className="num c-teal">{curStreak}</div><div className="lbl">Day streak</div><div className="sub">Longest: {longStreak}</div></div>
+              <div className="stat-card"><div className="num">{totalLogged}</div><div className="lbl">Total errors</div><div className="sub">{history.length} report days</div></div>
+              <div className="stat-card"><div className="num c-purple">{wordList.length}</div><div className="lbl">Vocab words</div><div className="sub">{unmasteredCount} to learn</div></div>
+              <div className="stat-card"><div className="num c-red">{daysLeft()}</div><div className="lbl">Days to exam</div><div className="sub">April 27</div></div>
+              <div className="stat-card"><div className="num c-amber" style={{fontSize:"1.05rem",paddingTop:6}}>{biggestWeak?.l||"—"}</div><div className="lbl">Biggest weak topic</div><div className="sub">{biggestWeak?topicCounts[biggestWeak.v]+" errors":""}</div></div>
+            </div>
+            {totalTagged>0&&<div className="chart-full"><div className="card"><div className="card-title">Quant mistake type breakdown — all time ({totalTagged} tagged)</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}><div className="mistake-breakdown">{MISTAKE_TYPES.filter(mt=>mistakeCounts[mt.v]>0).sort((a,b)=>mistakeCounts[b.v]-mistakeCounts[a.v]).map(mt=><div key={mt.v} className="mb-row"><div className="mb-label"><span>{mt.icon}</span><span style={{fontSize:"0.76rem"}}>{mt.name}</span></div><div className="mb-bar-w"><div className="mb-bar" style={{width:`${(mistakeCounts[mt.v]/totalTagged)*100}%`,background:mt.color}}/></div><div className="mb-cnt">{mistakeCounts[mt.v]}</div><div className="mb-pct">{Math.round((mistakeCounts[mt.v]/totalTagged)*100)}%</div></div>)}</div><ResponsiveContainer width="100%" height={180}><PieChart><Pie data={MISTAKE_TYPES.filter(mt=>mistakeCounts[mt.v]>0).map(mt=>({name:mt.name,value:mistakeCounts[mt.v]}))} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={({percent})=>`${(percent*100).toFixed(0)}%`} labelLine={false} fontSize={10}>{MISTAKE_TYPES.filter(mt=>mistakeCounts[mt.v]>0).map((mt,i)=><Cell key={i} fill={mt.color}/>)}</Pie><Tooltip contentStyle={{fontSize:11}}/></PieChart></ResponsiveContainer></div></div></div>}
+            {totalTagged>0&&<div className="chart-full"><div className="card"><div className="card-title">How to improve — based on your mistake patterns</div>{MISTAKE_TYPES.filter(mt=>mistakeCounts[mt.v]>0).sort((a,b)=>mistakeCounts[b.v]-mistakeCounts[a.v]).slice(0,3).map(mt=>{ const tip=MISTAKE_TIPS[mt.v]; return <div key={mt.v} className="tip-box" style={{background:mt.light,borderColor:mt.color+"44"}}><div className="tip-header"><span className="tip-icon">{mt.icon}</span><span className="tip-title" style={{color:mt.color}}>{tip.title}</span><span style={{marginLeft:"auto",fontFamily:"'DM Mono',monospace",fontSize:"0.68rem",color:mt.color}}>{mistakeCounts[mt.v]} errors · {Math.round((mistakeCounts[mt.v]/totalTagged)*100)}%</span></div><div className="tip-text" style={{marginBottom:8}}>{tip.tip}</div><div className="tip-text" style={{fontWeight:500,color:mt.color}}>→ {tip.action}</div></div>; })}</div></div>}
+            <div className="chart-grid-2">
+              <div className="card"><div className="card-title">Daily errors — last 14 days</div><ResponsiveContainer width="100%" height={190}><LineChart data={dailyChart} margin={{top:4,right:8,bottom:0,left:-22}}><XAxis dataKey="date" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}} allowDecimals={false}/><Tooltip contentStyle={{fontSize:11}}/><Line type="monotone" dataKey="Total" stroke="#0b6b6f" strokeWidth={2} dot={{r:3}}/><Line type="monotone" dataKey="Quant" stroke="#b8730a" strokeWidth={1.5} strokeDasharray="4 2" dot={false}/><Line type="monotone" dataKey="Verbal" stroke="#4a3585" strokeWidth={1.5} strokeDasharray="4 2" dot={false}/></LineChart></ResponsiveContainer></div>
+              <div className="card"><div className="card-title">Topic breakdown with trend</div>{topicsSorted.slice(0,9).map(s=><div key={s.v} className="topic-row"><div className="t-name">{s.l}</div><div className="t-bar-w"><div className="t-bar" style={{width:`${((topicCounts[s.v]||0)/maxCount)*100}%`,background:TAG_COLOR[s.tag]||"#888"}}/></div><div className="t-cnt">{topicCounts[s.v]}</div><div className="t-trend" style={{color:trend(s.v)==="↓"?"var(--green)":trend(s.v)==="↑"?"var(--red)":"var(--muted)"}}>{trend(s.v)}</div></div>)}</div>
+            </div>
+            <div className="chart-grid-2">
+              <div className="card"><div className="card-title">🚨 Recurring problems (3+ days)</div>{recurring.length===0?<div style={{fontSize:"0.82rem",color:"var(--muted)"}}>None yet.</div>:recurring.map(s=><span key={s.v} className="r-chip">{s.l}<span style={{opacity:.7,fontSize:"0.67rem",fontFamily:"'DM Mono',monospace"}}>{history.filter(h=>(h.errors||[]).some(e=>e.subject===s.v)).length}d</span></span>)}</div>
+              <div className="card"><div className="card-title">📚 Vocab summary</div><div className="ts-row"><span>Total words</span><span className="ts-num c-purple">{wordList.length}</span></div><div className="ts-row"><span>To learn</span><span className="ts-num c-red">{unmasteredCount}</span></div><div className="ts-row"><span>Mastered</span><span className="ts-num c-green">{wordList.filter(w=>w.mastered).length}</span></div>{topWords.slice(0,3).map(w=><div key={w.id} className="ts-row"><span style={{fontWeight:600}}>{w.word}</span><span style={{fontFamily:"'DM Mono',monospace",fontSize:"0.72rem",color:w.mastered?"var(--green)":"var(--red)"}}>{w.mastered?"✓":"×"+w.seenCount}</span></div>)}{wordList.length>0&&<button onClick={()=>setTab("vocab")} style={{marginTop:8,width:"100%",padding:"7px",background:"none",border:"1px solid var(--purple)",color:"var(--purple)",borderRadius:5,cursor:"pointer",fontSize:"0.78rem",fontFamily:"inherit"}}>View all words →</button>}</div>
+            </div>
+            <div className="card"><div className="card-title">Weekly AI Progress Summary</div><button className="weekly-btn" onClick={generateWeekly} disabled={history.length===0||loadingWeekly}>{loadingWeekly?"Generating...":"Generate Weekly Summary"}</button>{weeklyReport&&<div className="weekly-out"><div className="weekly-title">Weekly Analysis</div><div className="weekly-text">{weeklyReport}</div></div>}</div>
+          </>)}
+        </div>
+      )}
+
+      {tab==="history" && (
+        <div className="page">
+          <div className="sec-title">Report History</div>
+          <div className="sec-sub">{history.length} day{history.length!==1?"s":""} of reports.</div>
+          {history.length===0?<div className="empty">No reports yet.</div>:history.map(h=>(
+            <div key={h.id} className="hist-item">
+              <div className="hist-hdr" onClick={()=>setOpenHist(openHist===h.id?null:h.id)}>
+                <div style={{display:"flex",gap:12,alignItems:"center"}}>
+                  <span style={{fontWeight:600}}>{fmtDate(h.created_at||h.date)}</span>
+                  <span style={{color:"var(--muted)",fontSize:"0.78rem"}}>{h.errorCount} errors</span>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:"0.67rem",color:"var(--muted)"}}>Q:{(h.errors||[]).filter(e=>isQuantQ(e.subject)).length} V:{(h.errors||[]).filter(e=>!isQuantQ(e.subject)).length}</span>
+                  {MISTAKE_TYPES.filter(mt=>(h.errors||[]).some(e=>e.mistakeType===mt.v)).map(mt=><span key={mt.v} style={{fontSize:"0.68rem",padding:"1px 6px",borderRadius:3,background:mt.light,color:mt.color}}>{mt.icon}</span>)}
+                </div>
+                <span className={`chevron${openHist===h.id?" open":""}`}>▼</span>
+              </div>
+              {openHist===h.id&&<div className="hist-body">{h.report?.rawText||"No report data."}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {toast&&<div className="toast">{toast}</div>}
+    </>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
