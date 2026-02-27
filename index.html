@@ -255,7 +255,7 @@ async function callClaude(prompt, maxTokens=800) {
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body: JSON.stringify({model:"claude-sonnet-4-20250514", max_tokens:maxTokens, messages:[{role:"user",content:prompt}]})
+    body: JSON.stringify({model:"claude-haiku-4-5-20251001", max_tokens:maxTokens, messages:[{role:"user",content:prompt}]})
   });
   const d = await r.json();
   return d.content?.[0]?.text || "";
@@ -268,7 +268,16 @@ quant-algebra, quant-wordprob, quant-geometry, quant-stats, quant-arith, quant-p
 Rules: quant-qc=Quantity A vs B. verbal-tc=1-3 blanks one word each. verbal-se=one blank needs two matching words. verbal-rc=reading passage.
 Question: """${text.slice(0,500)}"""`;
   try {
-    const raw = (await callClaude(prompt, 30)).trim().toLowerCase().replace(/[^a-z-]/g,"");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", signal: controller.signal,
+      headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body: JSON.stringify({model:"claude-haiku-4-5-20251001", max_tokens:30, messages:[{role:"user",content:prompt}]})
+    });
+    clearTimeout(timeout);
+    const d = await r.json();
+    const raw = (d.content?.[0]?.text||"").trim().toLowerCase().replace(/[^a-z-]/g,"");
     return SUBJECTS.find(s=>s.v===raw) ? raw : null;
   } catch { return null; }
 }
