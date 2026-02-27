@@ -199,7 +199,7 @@
   // ── CONFIG — fill these in ─────────────────────────────
   const SUPABASE_URL = "https://xalowhixphoijdwgobkh.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhbG93aGl4cGhvaWpkd2dvYmtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxODkxNTEsImV4cCI6MjA4Nzc2NTE1MX0._1QyZlygfQ_K2MG9VC3i0dO4EVF2ZTwxHcvV-VC_4Lo";
-    // API key is now server-side only (in Vercel environment variables)
+  // API key is now server-side only (in Vercel environment variables)
   // ──────────────────────────────────────────────────────
 </script>
 
@@ -496,20 +496,37 @@ function App() {
     setLoadingReport(true); setReport(null);
     const list = errors.map((e,i) => {
       const mt = e.mistakeType ? ` [Mistake type: ${mtInfo(e.mistakeType)?.name}]` : "";
-      return `${i+1}. [${subInfo(e.subject).l}]${mt}\nQuestion: ${e.question.slice(0,300)}${e.note?`\nNote: ${e.note}`:""}`;
+      return `${i+1}. [${subInfo(e.subject).l}]${mt}\nQuestion: ${e.question.slice(0,250)}${e.note?`\nNote: ${e.note}`:""}`;
     }).join("\n\n");
     const qBreakdown = MISTAKE_TYPES.map(mt=>{const c=errors.filter(e=>e.mistakeType===mt.v).length;return c>0?`${mt.name}: ${c}`:null;}).filter(Boolean).join(", ");
     const prompt = `You are a GRE tutor analysing a student's daily wrong questions. Target: 170Q and 165+V.
-Wrong questions today:\n${list}${qBreakdown?`\nQuant mistake type breakdown: ${qBreakdown}`:""}
-For TC/SE, vocab extracted separately — focus on strategy gaps. For quant, distinguish silly vs conceptual.
-Respond in EXACTLY this format:
-PATTERNS:\n2-4 specific weak patterns. Name the exact gap.
-CONCEPT_GAPS:\nFor each gap: 1-2 sentences on the missing concept.
-PRACTICE_QUESTIONS:\n3-5 fresh GRE-style questions targeting weak areas. Full questions with answer choices.
-TOMORROW:\n3-4 specific actionable bullet points for tomorrow.`;
+Wrong questions today:
+${list}
+${qBreakdown?`Quant mistake type breakdown: ${qBreakdown}`:""}
+
+CRITICAL INSTRUCTIONS:
+- Do NOT use markdown (no **, no ##, no ---)
+- Use plain text only
+- You MUST include all four sections below, in order
+- Keep each section concise so you finish within the token limit
+
+Respond in EXACTLY this format with these exact labels:
+
+PATTERNS:
+List 2-3 specific weak patterns, one per line starting with a dash. Name the exact gap. For quant distinguish careless vs conceptual.
+
+CONCEPT_GAPS:
+For each gap write the concept name on one line, then 1-2 plain sentences explaining it. Separate gaps with a blank line.
+
+PRACTICE_QUESTIONS:
+Write exactly 3 GRE-style questions. Number them 1. 2. 3. Each must have 5 answer choices (A-E). Keep each question under 80 words.
+
+TOMORROW:
+Write exactly 3 bullet points starting with a dash. Be specific and actionable.`;
     try {
-      const raw = await callClaude(prompt, 1000);
-      const extract = (lbl,nxt) => { const s=raw.indexOf(`${lbl}:`);if(s===-1)return "";const cs=s+lbl.length+1;const ns=nxt?raw.indexOf(`${nxt}:`,cs):-1;return(ns===-1?raw.slice(cs):raw.slice(cs,ns)).trim(); };
+      const raw = await callClaude(prompt, 1800);
+      const clean = raw.replace(/\*\*/g,"").replace(/##/g,"").replace(/---/g,"");
+      const extract = (lbl,nxt) => { const s=clean.indexOf(`${lbl}:`);if(s===-1)return "";const cs=s+lbl.length+1;const ns=nxt?clean.indexOf(`${nxt}:`,cs):-1;return(ns===-1?clean.slice(cs):clean.slice(cs,ns)).trim(); };
       const parsed = { patterns:extract("PATTERNS","CONCEPT_GAPS"), concepts:extract("CONCEPT_GAPS","PRACTICE_QUESTIONS"), practice:extract("PRACTICE_QUESTIONS","TOMORROW"), tomorrow:extract("TOMORROW",null), date:Date.now(), errorCount:errors.length, rawText:raw };
       setReport(parsed);
       const dateStr = todayStr();
@@ -693,10 +710,10 @@ TOMORROW:\n3-4 specific actionable bullet points for tomorrow.`;
                 <div className="report-out" ref={reportRef}>
                   <div className="r-hdr"><div className="r-hdr-title">Daily Analysis Report</div><div className="r-hdr-date">{fmtDate(report.date)} · {report.errorCount} errors</div></div>
                   <div className="r-body">
-                    <div className="rsec"><div className="rsec-title">Weak Patterns</div>{report.patterns.split("\n").filter(l=>l.trim()).map((l,i)=><span key={i} className="pchip">{l.replace(/^[-•*\d.]+\s*/,"")}</span>)}</div>
+                    <div className="rsec"><div className="rsec-title">Weak Patterns</div>{report.patterns.split("\n").filter(l=>l.trim()).map((l,i)=><div key={i} className="pchip" style={{display:"block",marginBottom:6}}>{l.replace(/^[-•*\d.]+\s*/,"")}</div>)}</div>
                     <div className="rsec"><div className="rsec-title">Concept Gaps</div><div className="rsec-text">{report.concepts}</div></div>
                     <div className="rsec"><div className="rsec-title">Practice Questions</div>{report.practice.split(/\n(?=\d+[\.\)])/).filter(q=>q.trim()).map((q,i)=><div key={i} className="pq">{q.trim()}</div>)}</div>
-                    <div className="rsec"><div className="rsec-title">Focus for Tomorrow</div><div className="tmrw">{report.tomorrow}</div></div>
+                    <div className="rsec"><div className="rsec-title">Focus for Tomorrow</div><div className="tmrw">{report.tomorrow ? report.tomorrow.split("\n").filter(l=>l.trim()).map((l,i)=><div key={i} style={{marginBottom:8,paddingLeft:8,borderLeft:"3px solid var(--teal)",marginLeft:4}}>{l.replace(/^[-•*\d.]+\s*/,"")}</div>) : <span style={{color:"var(--muted)",fontSize:"0.82rem"}}>No focus points generated — try regenerating the report.</span>}</div></div>
                   </div>
                 </div>
               )}
