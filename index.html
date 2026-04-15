@@ -189,7 +189,52 @@
     .auth-err{font-size:0.8rem;color:var(--red);margin-bottom:8px;background:var(--red-l);padding:8px 12px;border-radius:6px}
     .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:1.2rem;color:var(--muted)}
 
-    @media(max-width:720px){.stat-grid{grid-template-columns:repeat(2,1fr)}.chart-grid-2{grid-template-columns:1fr}.log-grid{grid-template-columns:1fr}.word-grid{grid-template-columns:1fr}.mistake-grid{grid-template-columns:repeat(3,1fr)}}
+    /* ── TIMETABLE STYLES ── */
+    .tt-wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px}
+    .tt-header{margin-bottom:28px}
+    .tt-header h1{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;margin-bottom:6px}
+    .tt-meta{display:flex;gap:20px;font-size:0.82rem;color:var(--muted);flex-wrap:wrap}
+    .tt-meta strong{color:var(--red)}
+    .tt-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px}
+    .tt-tab{background:none;border:none;padding:10px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.82rem;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+    .tt-tab:hover{color:var(--ink)}
+    .tt-tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+    .tt-ai-banner{background:var(--amber-l);border:1px solid var(--amber);border-radius:10px;padding:14px 16px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start}
+    .tt-ai-banner strong{color:var(--amber);font-size:0.8rem}
+    .tt-ai-banner p{font-size:0.83rem;color:var(--ink);line-height:1.55;margin-top:3px}
+    .tt-ai-close{background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--muted);margin-left:auto;padding:0 4px}
+    .tt-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px}
+    .tt-panel h2{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;margin-bottom:18px}
+    .tt-task{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;transition:border-color .15s}
+    .tt-task.done{background:var(--green-l);border-color:#a8d5b5;opacity:.75}
+    .tt-task input[type=checkbox]{width:18px;height:18px;margin-top:3px;cursor:pointer;flex-shrink:0;accent-color:var(--teal)}
+    .tt-task-body{flex:1}
+    .tt-task-name{font-weight:600;font-size:0.88rem;color:var(--ink)}
+    .tt-task-meta{font-size:0.75rem;color:var(--muted);margin-top:3px}
+    .tt-badge{display:inline-block;font-size:0.65rem;font-weight:600;padding:2px 7px;border-radius:4px;margin-top:6px;text-transform:uppercase}
+    .tt-badge.essential{background:var(--red-l);color:var(--red)}
+    .tt-badge.flexible{background:var(--amber-l);color:var(--amber)}
+    .tt-defer-btn{background:var(--blue-l);border:1px solid #90b8e0;border-radius:5px;padding:4px 10px;font-size:0.72rem;cursor:pointer;color:var(--blue);font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;flex-shrink:0}
+    .tt-defer-btn:hover{background:#c8ddf5}
+    .tt-day-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px}
+    .tt-day-hdr{background:var(--surface2);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+    .tt-day-hdr:hover{background:var(--border)}
+    .tt-day-title{font-weight:600;font-size:0.9rem}
+    .tt-day-sub{font-size:0.75rem;color:var(--muted);margin-top:2px}
+    .tt-day-body{padding:16px}
+    .tt-eod{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+    .tt-eod h3{font-size:0.88rem;font-weight:600;margin-bottom:12px}
+    .tt-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+    .tt-stat{padding:14px 16px;border-radius:8px}
+    .tt-stat .num{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;line-height:1}
+    .tt-stat .lbl{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+    .tt-prog-bar{background:var(--surface2);border-radius:6px;height:12px;overflow:hidden}
+    .tt-prog-fill{height:100%;border-radius:6px;background:var(--teal);transition:width .4s}
+    .tt-insight-btn{width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.875rem;font-weight:600;cursor:pointer;transition:opacity .15s;margin-top:12px}
+    .tt-insight-btn:hover{opacity:.85}
+    .tt-insight-btn:disabled{opacity:.35;cursor:not-allowed}
+
+    @media(max-width:720px){.stat-grid{grid-template-columns:repeat(2,1fr)}.chart-grid-2{grid-template-columns:1fr}.log-grid{grid-template-columns:1fr}.word-grid{grid-template-columns:1fr}.mistake-grid{grid-template-columns:repeat(3,1fr)}.tt-meta{flex-direction:column;gap:6px}}
   </style>
 </head>
 <body>
@@ -247,7 +292,7 @@ const mtInfo   = v => MISTAKE_TYPES.find(m=>m.v===v);
 const fmtDate  = ts => new Date(ts).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
 const fmtTime  = ts => new Date(ts).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
 const todayStr = () => new Date().toDateString();
-const daysLeft = () => Math.max(0, Math.ceil((new Date("2026-04-27") - new Date()) / 86400000));
+const daysLeft = () => Math.max(0, Math.ceil((new Date("2026-05-04") - new Date()) / 86400000));
 const isVocabQ = v => v==="verbal-tc" || v==="verbal-se";
 const isQuantQ = v => v && v.startsWith("quant");
 
@@ -256,6 +301,17 @@ async function callClaude(prompt, maxTokens=800) {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify({model:"claude-haiku-4-5-20251001", max_tokens:maxTokens, messages:[{role:"user",content:prompt}]})
+  });
+  const d = await r.json();
+  return d.content?.[0]?.text || "";
+}
+
+// Used by timetable for bigger AI responses (scheduling logic needs Sonnet)
+async function callClaudeSonnet(prompt, maxTokens=400) {
+  const r = await fetch("/api/claude", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({model:"claude-sonnet-4-20250514", max_tokens:maxTokens, messages:[{role:"user",content:prompt}]})
   });
   const d = await r.json();
   return d.content?.[0]?.text || "";
@@ -299,7 +355,7 @@ Include 3-6 genuinely difficult GRE-level words only. Skip common words.`;
 
 // ── Auth Screen ────────────────────────────────────────
 function AuthScreen({ onAuth }) {
-  const [mode, setMode]       = useState("login"); // login | signup
+  const [mode, setMode]       = useState("login");
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -340,9 +396,444 @@ function AuthScreen({ onAuth }) {
   );
 }
 
+// ═══════════════════════════════════════════════════════
+// TIMETABLE COMPONENT
+// ═══════════════════════════════════════════════════════
+function GREDynamicTimetable({ session, supabaseClient }) {
+  const userId = session.user.id;
+  const examDate = new Date(2026, 4, 4); // May 4, 2026
+
+  const coreWeekdayTasks = [
+    { id: 'hf-morning',    name: 'HF Word List (active recall)',          duration: 20,  time: '9:00-9:20',   type: 'vocab',   category: 'essential' },
+    { id: 'notebook-rev',  name: 'Notebook Revision (last 3 days)',        duration: 25,  time: '9:20-9:45',   type: 'vocab',   category: 'essential' },
+    { id: 'tc-se-morning', name: '15 TC/SE timed (1.5 min each)',          duration: 30,  time: '9:45-10:15',  type: 'verbal',  category: 'essential' },
+    { id: 'rc-morning',    name: '5 RC passages + argument mapping',        duration: 30,  time: '10:15-10:45', type: 'rc',      category: 'essential' },
+    { id: 'topic-test',    name: 'Quant topic test (weak area)',            duration: 45,  time: '10:45-11:30', type: 'quant',   category: 'essential' },
+    { id: 'office',        name: 'Office (Gregmat HF words + Magoosh)',     duration: 570, time: '12:00-21:30', type: 'vocab',   category: 'flexible'  },
+    { id: 'awa-evening',   name: 'AWA (timed essay or learning)',           duration: 30,  time: '22:00-22:30', type: 'awa',     category: 'essential' },
+    { id: 'quant-section', name: 'Full quant section (27q, 35min, 90sec)', duration: 45,  time: '22:30-23:15', type: 'quant',   category: 'essential' },
+    { id: 'tc-se-evening', name: '15 TC/SE timed',                         duration: 30,  time: '23:15-23:45', type: 'verbal',  category: 'essential' },
+    { id: 'lexicon',       name: 'Lexicon (3-4 pages slowly)',              duration: 25,  time: '23:45-00:10', type: 'vocab',   category: 'essential' },
+  ];
+
+  const coreWeekendTasks = [
+    { id: 'hf-weekend',      name: 'HF Word List (active recall)',      duration: 20,  time: '9:30-9:50',   type: 'vocab',   category: 'essential' },
+    { id: 'notebook-weekend',name: 'Notebook Revision (full week)',      duration: 25,  time: '9:50-10:15',  type: 'vocab',   category: 'essential' },
+    { id: 'tc-se-weekend',   name: '20 TC/SE timed',                    duration: 30,  time: '10:15-10:45', type: 'verbal',  category: 'essential' },
+    { id: 'rc-weekend',      name: '5 RC passages + argument mapping',  duration: 30,  time: '10:45-11:15', type: 'rc',      category: 'essential' },
+    { id: 'awa-weekend',     name: 'AWA timed essay',                   duration: 60,  time: '11:15-12:15', type: 'awa',     category: 'essential' },
+    { id: 'mock-1',          name: 'Full mock (2h45m, tutor/official)', duration: 165, time: '12:30-15:15', type: 'mock',    category: 'essential' },
+    { id: 'mock-review-1',   name: 'Review mock 1 errors + log',        duration: 60,  time: '15:30-16:30', type: 'review',  category: 'essential' },
+    { id: 'mock-2',          name: 'Full mock 2 (2h45m)',               duration: 165, time: '16:45-19:30', type: 'mock',    category: 'essential' },
+    { id: 'mock-review-2',   name: 'Review mock 2 errors + log',        duration: 60,  time: '19:30-20:30', type: 'review',  category: 'essential' },
+    { id: 'awa-review',      name: 'Read one 6.0 AWA essay',            duration: 30,  time: '20:30-21:00', type: 'awa',     category: 'essential' },
+    { id: 'lexicon-weekend', name: 'Lexicon + notebook new words',      duration: 30,  time: '21:00-21:30', type: 'vocab',   category: 'essential' },
+  ];
+
+  const mockSchedule = {
+    '2026-04-18': 'Tutor 1', '2026-04-19': 'Tutor 2', '2026-04-25': 'Tutor 3',
+    '2026-04-26': 'ETS PowerPrep 1', '2026-04-27': 'Tutor 4',
+    '2026-04-29': 'Tutor 5', '2026-04-30': 'Tutor 6', '2026-05-02': 'ETS PowerPrep 2',
+  };
+
+  const awaSchedule = {
+    '2026-04-13': 'Read ETS guide + 2 sample essays',
+    '2026-04-14': 'Write 1 Argument untimed',
+    '2026-04-15': 'Write 1 Issue timed (30 min)',
+    '2026-04-16': 'Write 1 Argument timed (30 min)',
+    '2026-04-17': 'Write 1 Issue timed (30 min)',
+    '2026-04-18': 'Read 1 sample essay',
+    '2026-04-19': '2 essays timed (Issue + Argument)',
+    '2026-04-20': 'Issue timed', '2026-04-21': 'Argument timed',
+    '2026-04-22': 'Issue timed', '2026-04-23': 'Argument timed',
+    '2026-04-24': 'Issue timed',
+  };
+
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [todaySchedule, setTodaySchedule]   = useState([]);
+  const [weekSchedule, setWeekSchedule]     = useState([]);
+  const [completedTasks, setCompletedTasks] = useState({});
+  const [taskHistory, setTaskHistory]       = useState([]);
+  const [energyLevels, setEnergyLevels]     = useState({});
+  const [dailyLog, setDailyLog]             = useState([]);
+  const [activeTab, setActiveTab]           = useState('today');
+  const [expandedDay, setExpandedDay]       = useState(null);
+  const [aiRecommendation, setAiRecommendation] = useState('');
+  const [showAI, setShowAI]                 = useState(false);
+  const [aiLoading, setAiLoading]           = useState(false);
+  const [energyVal, setEnergyVal]           = useState(5);
+  const [dayNotes, setDayNotes]             = useState('');
+  const [ttLoading, setTtLoading]           = useState(true);
+
+  // ── Supabase helpers ──
+  async function loadTtData() {
+    setTtLoading(true);
+    try {
+      const [compRes, histRes, energyRes, logRes] = await Promise.all([
+        supabaseClient.from('tt_completed').select('*').eq('user_id', userId),
+        supabaseClient.from('tt_task_history').select('*').eq('user_id', userId).order('created_at', {ascending:false}),
+        supabaseClient.from('tt_energy').select('*').eq('user_id', userId).order('date_str', {ascending:false}),
+        supabaseClient.from('tt_daily_log').select('*').eq('user_id', userId).order('date_str', {ascending:false}),
+      ]);
+      if (compRes.data) {
+        const map = {};
+        compRes.data.forEach(r => { map[r.task_key] = r.completed; });
+        setCompletedTasks(map);
+      }
+      if (histRes.data)   setTaskHistory(histRes.data);
+      if (energyRes.data) {
+        const map = {};
+        energyRes.data.forEach(r => { map[r.date_str] = r.level; });
+        setEnergyLevels(map);
+      }
+      if (logRes.data)    setDailyLog(logRes.data);
+    } catch(e) { console.error('tt load error', e); }
+    setTtLoading(false);
+  }
+
+  async function saveCompleted(key, val) {
+    const { error } = await supabaseClient.from('tt_completed').upsert(
+      { user_id: userId, task_key: key, completed: val },
+      { onConflict: 'user_id,task_key' }
+    );
+    if (error) console.error('save completed', error);
+  }
+
+  async function saveDeferral(entry) {
+    await supabaseClient.from('tt_task_history').insert({ ...entry, user_id: userId });
+  }
+
+  async function saveDailyLog(entry) {
+    await supabaseClient.from('tt_daily_log').upsert(
+      { ...entry, user_id: userId },
+      { onConflict: 'user_id,date_str' }
+    );
+    await supabaseClient.from('tt_energy').upsert(
+      { user_id: userId, date_str: entry.date_str, level: entry.energy_level },
+      { onConflict: 'user_id,date_str' }
+    );
+  }
+
+  // ── Schedule generation ──
+  function buildTasks(date) {
+    const dow = date.getDay();
+    const isWe = dow === 0 || dow === 6;
+    const base = isWe ? coreWeekendTasks : coreWeekdayTasks;
+    const ds = date.toISOString().split('T')[0];
+    return base.map(task => {
+      if (mockSchedule[ds] && (task.id === 'mock-1' || task.id === 'mock-2'))
+        return { ...task, name: `${task.name.split('(')[0].trim()} (${mockSchedule[ds]})` };
+      if (awaSchedule[ds] && (task.id === 'awa-evening' || task.id === 'awa-weekend'))
+        return { ...task, name: `AWA: ${awaSchedule[ds]}` };
+      return task;
+    });
+  }
+
+  useEffect(() => {
+    setTodaySchedule(buildTasks(currentDate));
+    const week = [];
+    const start = new Date(currentDate);
+    start.setDate(start.getDate() - start.getDay());
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      week.push({
+        date: d.toISOString().split('T')[0],
+        dayName: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()],
+        tasks: buildTasks(d),
+      });
+    }
+    setWeekSchedule(week);
+  }, [currentDate]);
+
+  useEffect(() => { loadTtData(); }, []);
+
+  // ── Task actions ──
+  function toggleTask(dateStr, taskId) {
+    const key = `${dateStr}:${taskId}`;
+    const newVal = !completedTasks[key];
+    setCompletedTasks(prev => ({ ...prev, [key]: newVal }));
+    saveCompleted(key, newVal);
+  }
+
+  async function deferTask(taskId, fromDateStr) {
+    const task = todaySchedule.find(t => t.id === taskId);
+    if (!task) return;
+    const tomorrow = new Date(currentDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const toDate = tomorrow.toISOString().split('T')[0];
+    const entry = { from_date: fromDateStr, to_date: toDate, task_id: taskId, task_name: task.name };
+    const updated = [entry, ...taskHistory];
+    setTaskHistory(updated);
+    await saveDeferral(entry);
+    // AI reschedule recommendation
+    setAiLoading(true);
+    try {
+      const deferCount = taskHistory.filter(h => h.task_id === taskId).length;
+      const prompt = `You are a GRE prep scheduling assistant. A student wants to defer a task.
+Task: "${task.name}" (Type: ${task.type}, Duration: ${task.duration} min)
+From: ${fromDateStr} → Suggested: ${toDate}
+Times deferred before: ${deferCount}
+Mocks are UNMOVABLE. AWA only evening weekday / morning weekend. Max 4.5h focused/day.
+Reply in one short paragraph: RECOMMENDATION: [best day/time]. REASON: [1-2 sentences].${deferCount>=2?' WARNING: pattern of not completing deferred tasks.':''}`;
+      const rec = await callClaudeSonnet(prompt, 300);
+      setAiRecommendation(rec);
+      setShowAI(true);
+    } catch(e) { console.error(e); }
+    setAiLoading(false);
+  }
+
+  async function logDay() {
+    const ds = currentDate.toISOString().split('T')[0];
+    const completedCount = Object.keys(completedTasks).filter(k => k.startsWith(ds) && completedTasks[k]).length;
+    const total = todaySchedule.length;
+    const entry = {
+      date_str: ds,
+      completed_tasks: completedCount,
+      total_tasks: total,
+      completion_rate: total > 0 ? ((completedCount/total)*100).toFixed(1) : '0',
+      energy_level: energyVal,
+      notes: dayNotes,
+    };
+    const updated = [entry, ...dailyLog.filter(d => d.date_str !== ds)];
+    setDailyLog(updated);
+    setEnergyLevels(prev => ({ ...prev, [ds]: energyVal }));
+    await saveDailyLog(entry);
+
+    // AI daily analysis
+    setAiLoading(true);
+    try {
+      const week = updated.slice(0, 6);
+      const prompt = `Analyze this GRE student's daily prep (target: May 4 exam).
+Today: ${completedCount}/${total} tasks (${entry.completion_rate}%), Energy: ${energyVal}/10, Notes: "${dayNotes}"
+Last 6 days: ${week.map(d=>`${d.date_str}: ${d.completed_tasks}/${d.total_tasks} E:${d.energy_level}`).join(' | ')}
+Reply in 3-4 sentences: INSIGHT: [on track?]. TOMORROW: [one specific adjustment]. ${energyVal<=4?'Note low energy pattern.':''}`;
+      const analysis = await callClaudeSonnet(prompt, 250);
+      setAiRecommendation(analysis);
+      setShowAI(true);
+    } catch(e) { console.error(e); }
+    setAiLoading(false);
+    setDayNotes('');
+  }
+
+  // ── Derived ──
+  const daysUntilExam = Math.ceil((examDate - currentDate) / (1000*60*60*24));
+  const todayDs = currentDate.toISOString().split('T')[0];
+
+  function weekCompletion() {
+    const start = new Date(currentDate);
+    start.setDate(start.getDate() - currentDate.getDay());
+    let comp = 0, tot = 0;
+    Object.entries(completedTasks).forEach(([key, val]) => {
+      const [ds] = key.split(':');
+      const d = new Date(ds);
+      const end = new Date(start); end.setDate(end.getDate()+6);
+      if (d >= start && d <= end) { tot++; if (val) comp++; }
+    });
+    return { comp, tot, rate: tot > 0 ? Math.round((comp/tot)*100) : 0 };
+  }
+  const wk = weekCompletion();
+
+  // ── Task Card ──
+  function TaskCard({ task, done, onToggle, onDefer, dateStr }) {
+    return (
+      <div className={`tt-task${done?' done':''}`}>
+        <input type="checkbox" checked={!!done} onChange={onToggle} />
+        <div className="tt-task-body">
+          <div className="tt-task-name">{task.name}</div>
+          <div className="tt-task-meta">{task.time} · {task.duration} min</div>
+          <span className={`tt-badge ${task.category}`}>{task.category}</span>
+        </div>
+        {!done && (
+          <button className="tt-defer-btn" onClick={() => onDefer(task.id, dateStr)}>
+            Defer →
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (ttLoading) return <div style={{padding:40,textAlign:'center',color:'var(--muted)'}}>Loading timetable...</div>;
+
+  return (
+    <div className="tt-wrap">
+      {/* Header */}
+      <div className="tt-header">
+        <h1>Dynamic Timetable</h1>
+        <div className="tt-meta">
+          <span>Today: {currentDate.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'})}</span>
+          <span><strong>{daysUntilExam} days to exam</strong></span>
+          <span>Week: {wk.comp}/{wk.tot} tasks ({wk.rate}%)</span>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="tt-tabs">
+        {[['today','📅 Today'],['week','🗓 Week'],['insights','📊 Insights']].map(([t,l]) => (
+          <button key={t} className={`tt-tab${activeTab===t?' active':''}`} onClick={()=>setActiveTab(t)}>{l}</button>
+        ))}
+      </div>
+
+      {/* AI Banner */}
+      {showAI && (
+        <div className="tt-ai-banner">
+          <div style={{flex:1}}>
+            <strong>⚡ AI Insight {aiLoading ? '(loading...)' : ''}</strong>
+            <p>{aiRecommendation}</p>
+          </div>
+          <button className="tt-ai-close" onClick={()=>setShowAI(false)}>×</button>
+        </div>
+      )}
+
+      {/* Today */}
+      {activeTab === 'today' && (
+        <div className="tt-panel">
+          <h2>Today's Schedule</h2>
+          {todaySchedule.map(task => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              done={completedTasks[`${todayDs}:${task.id}`]}
+              onToggle={() => toggleTask(todayDs, task.id)}
+              onDefer={deferTask}
+              dateStr={todayDs}
+            />
+          ))}
+
+          {/* End of day */}
+          <div className="tt-eod">
+            <h3>End of Day Summary</h3>
+            <div style={{display:'flex',gap:16,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
+              <div style={{flex:1,minWidth:200}}>
+                <label style={{display:'block',fontSize:'0.72rem',fontWeight:600,color:'var(--muted)',marginBottom:6}}>
+                  Energy Level: <strong style={{color:'var(--ink)'}}>{energyVal}/10</strong>
+                </label>
+                <input
+                  type="range" min="1" max="10"
+                  value={energyVal}
+                  onChange={e=>setEnergyVal(Number(e.target.value))}
+                  style={{width:'100%',accentColor:'var(--teal)'}}
+                />
+              </div>
+              <button className="tt-insight-btn" style={{width:'auto',padding:'10px 20px',marginTop:0}} onClick={logDay} disabled={aiLoading}>
+                {aiLoading ? 'Analysing...' : 'Log Day + Get AI Insight'}
+              </button>
+            </div>
+            <textarea
+              value={dayNotes}
+              onChange={e=>setDayNotes(e.target.value)}
+              placeholder="Notes: felt weak on RC, office was busy, etc."
+              style={{minHeight:60,fontSize:'0.84rem'}}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Week */}
+      {activeTab === 'week' && (
+        <div>
+          {weekSchedule.map((dayData, idx) => {
+            const dayComp = dayData.tasks.filter(t => completedTasks[`${dayData.date}:${t.id}`]).length;
+            return (
+              <div key={dayData.date} className="tt-day-block">
+                <div className="tt-day-hdr" onClick={()=>setExpandedDay(expandedDay===idx?null:idx)}>
+                  <div>
+                    <div className="tt-day-title">{dayData.dayName} · {new Date(dayData.date+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+                    <div className="tt-day-sub">{dayData.tasks.length} tasks · {Math.round(dayData.tasks.reduce((s,t)=>s+t.duration,0)/60*10)/10}h · {dayComp} done</div>
+                  </div>
+                  <span style={{fontSize:'0.9rem',color:'var(--muted)'}}>{expandedDay===idx?'▲':'▼'}</span>
+                </div>
+                {expandedDay===idx && (
+                  <div className="tt-day-body">
+                    {dayData.tasks.map(task => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        done={completedTasks[`${dayData.date}:${task.id}`]}
+                        onToggle={() => toggleTask(dayData.date, task.id)}
+                        onDefer={deferTask}
+                        dateStr={dayData.date}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Insights */}
+      {activeTab === 'insights' && (
+        <div className="tt-panel">
+          <h2>Progress & Insights</h2>
+          <div className="tt-stats-grid">
+            <div className="tt-stat" style={{background:'var(--teal-l)'}}>
+              <div className="lbl" style={{color:'var(--teal)'}}>Days Logged</div>
+              <div className="num" style={{color:'var(--teal)'}}>{dailyLog.length}</div>
+            </div>
+            <div className="tt-stat" style={{background:'var(--purple-l)'}}>
+              <div className="lbl" style={{color:'var(--purple)'}}>Tasks Deferred</div>
+              <div className="num" style={{color:'var(--purple)'}}>{taskHistory.length}</div>
+            </div>
+            <div className="tt-stat" style={{background:'var(--green-l)'}}>
+              <div className="lbl" style={{color:'var(--green)'}}>Avg Completion</div>
+              <div className="num" style={{color:'var(--green)'}}>
+                {dailyLog.length > 0
+                  ? Math.round(dailyLog.reduce((s,d)=>s+parseFloat(d.completion_rate),0)/dailyLog.length)
+                  : 0}%
+              </div>
+            </div>
+            <div className="tt-stat" style={{background:'var(--amber-l)'}}>
+              <div className="lbl" style={{color:'var(--amber)'}}>Avg Energy</div>
+              <div className="num" style={{color:'var(--amber)'}}>
+                {dailyLog.length > 0
+                  ? (dailyLog.reduce((s,d)=>s+(d.energy_level||5),0)/dailyLog.length).toFixed(1)
+                  : '—'}/10
+              </div>
+            </div>
+          </div>
+
+          {/* Completion trend bar */}
+          {dailyLog.length > 0 && (
+            <div style={{marginBottom:24}}>
+              <div className="card-title" style={{marginBottom:12}}>Daily Completion — Last 7 Days</div>
+              {dailyLog.slice(0,7).reverse().map((d,i) => (
+                <div key={i} style={{display:'flex',alignItems:'center',gap:12,marginBottom:8}}>
+                  <span style={{width:70,fontSize:'0.72rem',fontFamily:"'DM Mono',monospace",color:'var(--muted)'}}>{d.date_str?.slice(5)}</span>
+                  <div className="tt-prog-bar" style={{flex:1}}>
+                    <div className="tt-prog-fill" style={{width:`${d.completion_rate}%`}} />
+                  </div>
+                  <span style={{width:36,fontSize:'0.72rem',fontFamily:"'DM Mono',monospace",color:'var(--muted)',textAlign:'right'}}>{d.completion_rate}%</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Deferred task history */}
+          {taskHistory.length > 0 && (
+            <div>
+              <div className="card-title" style={{marginBottom:12}}>Recent Deferrals</div>
+              {taskHistory.slice(0,5).map((h,i) => (
+                <div key={i} style={{background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:7,padding:'10px 14px',marginBottom:8,fontSize:'0.82rem'}}>
+                  <div style={{fontWeight:600}}>{h.task_name?.slice(0,50)}</div>
+                  <div style={{color:'var(--muted)',fontSize:'0.72rem',marginTop:3,fontFamily:"'DM Mono',monospace"}}>{h.from_date} → {h.to_date}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+// ═══════════════════════════════════════════════════════
+// END TIMETABLE
+// ═══════════════════════════════════════════════════════
+
 // ── Main App ───────────────────────────────────────────
 function App() {
-  const [session, setSession]   = useState(undefined); // undefined=loading, null=not authed
+  const [session, setSession]   = useState(undefined);
   const [tab, setTab]           = useState("log");
   const [errors, setErrors]     = useState([]);
   const [history, setHistory]   = useState([]);
@@ -372,14 +863,12 @@ function App() {
   const [wordSearch, setWordSearch]     = useState("");
   const reportRef = useRef(null);
 
-  // Auth listener
   useEffect(() => {
     supabase.auth.getSession().then(({data:{session}}) => setSession(session));
     const {data:{subscription}} = supabase.auth.onAuthStateChange((_,session) => setSession(session));
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load data from Supabase when session exists
   useEffect(() => {
     if (!session) { setLoading(false); return; }
     loadAllData();
@@ -403,7 +892,6 @@ function App() {
 
   function showToast(msg) { setToast(msg); setTimeout(()=>setToast(""),2800); }
 
-  // Auto-detect
   useEffect(() => {
     clearTimeout(detectTimer.current);
     if (question.trim().length < 20) { setDetectedSubject(null); setManualSubject(null); setShowManualSelect(false); setSelectedMistakeType(null); return; }
@@ -604,7 +1092,7 @@ Write exactly 3 bullet points starting with a dash. Be specific and actionable.`
       <nav className="nav">
         <div className="nav-brand">GRE <span>Analyser</span></div>
         <div className="nav-tabs">
-          {[["log","📋 Log"],["vocab","📚 My Words"],["dashboard","📊 Dashboard"],["history","📅 History"]].map(([t,l])=>(
+          {[["log","📋 Log"],["vocab","📚 My Words"],["dashboard","📊 Dashboard"],["history","📅 History"],["timetable","🗓 Timetable"]].map(([t,l])=>(
             <button key={t} className={`nav-tab${tab===t?" active":""}`} onClick={()=>setTab(t)}>
               {l}{t==="vocab"&&unmasteredCount>0&&<span style={{marginLeft:5,background:"var(--red)",color:"#fff",borderRadius:10,padding:"0 5px",fontSize:"0.65rem"}}>{unmasteredCount}</span>}
             </button>
@@ -615,6 +1103,11 @@ Write exactly 3 bullet points starting with a dash. Be specific and actionable.`
           <button className="signout-btn" onClick={()=>supabase.auth.signOut()}>Sign out</button>
         </div>
       </nav>
+
+      {/* ── TIMETABLE TAB ── */}
+      {tab==="timetable" && (
+        <GREDynamicTimetable session={session} supabaseClient={supabase} />
+      )}
 
       {tab==="log" && (
         <div className="page">
@@ -705,45 +1198,38 @@ Write exactly 3 bullet points starting with a dash. Be specific and actionable.`
                   })}
                 </div>
               )}
-
-              {report && (
-                <div className="report-out" ref={reportRef}>
-                  <div className="r-hdr"><div className="r-hdr-title">Daily Analysis Report</div><div className="r-hdr-date">{fmtDate(report.date)} · {report.errorCount} errors</div></div>
-                  <div className="r-body">
-                    <div className="rsec"><div className="rsec-title">Weak Patterns</div>{report.patterns.split("\n").filter(l=>l.trim()).map((l,i)=><div key={i} className="pchip" style={{display:"block",marginBottom:6}}>{l.replace(/^[-•*\d.]+\s*/,"")}</div>)}</div>
-                    <div className="rsec"><div className="rsec-title">Concept Gaps</div><div className="rsec-text">{report.concepts}</div></div>
-                    <div className="rsec"><div className="rsec-title">Practice Questions</div>{report.practice.split(/\n(?=\d+[\.\)])/).filter(q=>q.trim()).map((q,i)=><div key={i} className="pq">{q.trim()}</div>)}</div>
-                    <div className="rsec"><div className="rsec-title">Focus for Tomorrow</div><div className="tmrw">{report.tomorrow ? report.tomorrow.split("\n").filter(l=>l.trim()).map((l,i)=><div key={i} style={{marginBottom:8,paddingLeft:8,borderLeft:"3px solid var(--teal)",marginLeft:4}}>{l.replace(/^[-•*\d.]+\s*/,"")}</div>) : <span style={{color:"var(--muted)",fontSize:"0.82rem"}}>No focus points generated — try regenerating the report.</span>}</div></div>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div>
               <div className="sidebar-card">
-                <div className="sb-title">Today so far</div>
-                <div className="ts-row"><span>Total logged</span><span className="ts-num">{errors.length}</span></div>
-                <div className="ts-row"><span>Quant</span><span className="ts-num c-amber">{todayQ}</span></div>
-                <div className="ts-row"><span>Verbal</span><span className="ts-num c-teal">{todayV}</span></div>
-                {MISTAKE_TYPES.map(mt=>{ const c=errors.filter(e=>e.mistakeType===mt.v).length; return c>0?<div key={mt.v} className="ts-row"><span style={{fontSize:"0.78rem"}}>{mt.icon} {mt.name}</span><span className="ts-num" style={{color:mt.color}}>{c}</span></div>:null; })}
+                <div className="sb-title">Today's log</div>
+                <div className="ts-row"><span>Quant errors</span><span className="ts-num c-amber">{todayQ}</span></div>
+                <div className="ts-row"><span>Verbal errors</span><span className="ts-num c-teal">{todayV}</span></div>
+                <div className="ts-row"><span>Total</span><span className="ts-num">{errors.length}</span></div>
               </div>
-              <div className="sidebar-card">
-                <div className="sb-title">Streak</div>
-                <div style={{display:"flex",gap:20,marginBottom:10}}>
-                  <div><div style={{fontFamily:"'Fraunces',serif",fontSize:"1.8rem",color:"var(--teal)",lineHeight:1}}>{curStreak}</div><div style={{fontSize:"0.7rem",color:"var(--muted)"}}>current</div></div>
-                  <div><div style={{fontFamily:"'Fraunces',serif",fontSize:"1.8rem",color:"var(--amber)",lineHeight:1}}>{longStreak}</div><div style={{fontSize:"0.7rem",color:"var(--muted)"}}>longest</div></div>
+              <button className={`report-btn${loadingReport?" loading":""}`} onClick={generateReport} disabled={!errors.length||loadingReport}>
+                {loadingReport?"Generating report…":"Generate Today's Report →"}
+              </button>
+              <button style={{width:"100%",padding:"8px",background:"none",border:"1px solid var(--border)",borderRadius:6,cursor:"pointer",color:"var(--muted)",fontSize:"0.77rem",fontFamily:"inherit",marginBottom:10}} onClick={clearAll}>
+                {confirmClear?"Tap again to confirm clear":"Clear today's log"}
+              </button>
+              {report && (
+                <div className="report-out" ref={reportRef}>
+                  <div className="r-hdr">
+                    <div className="r-hdr-title">Today's Report</div>
+                    <div className="r-hdr-date">{new Date(report.date).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</div>
+                  </div>
+                  <div className="r-body">
+                    <div className="rsec"><div className="rsec-title">Patterns</div><div className="rsec-text">{report.patterns}</div></div>
+                    <div className="rsec"><div className="rsec-title">Concept Gaps</div><div className="rsec-text">{report.concepts}</div></div>
+                    <div className="rsec">
+                      <div className="rsec-title">Practice Questions</div>
+                      {report.practice?.split(/\n(?=\d\.)/).map((q,i)=><div key={i} className="pq">{q.trim()}</div>)}
+                    </div>
+                    <div className="rsec"><div className="rsec-title">Tomorrow's Focus</div><div className="tmrw">{report.tomorrow}</div></div>
+                  </div>
                 </div>
-                <div className="streak-row">{streakDots.map((d,i)=><div key={i} className={`s-dot${d.active?" on":""}${d.today?" now":""}`} title={d.ds}><span className="sd">{d.day}</span>{d.active&&<span className="sc">{d.count}</span>}</div>)}</div>
-              </div>
-              <button className={`report-btn${loadingReport?" loading":""}`} onClick={generateReport} disabled={errors.length===0||loadingReport}>{loadingReport?"Analysing...":`Generate Report → ${errors.length} Q${errors.length!==1?"s":""}`}</button>
-              <div className="sidebar-card">
-                <div className="sb-title">All time</div>
-                <div className="ts-row"><span>Total errors</span><span className="ts-num">{totalLogged}</span></div>
-                <div className="ts-row"><span>Words in list</span><span className="ts-num c-purple">{wordList.length}</span></div>
-                <div className="ts-row"><span>Days to exam</span><span className="ts-num c-red">{daysLeft()}</span></div>
-                {topMistake&&<div className="ts-row"><span>Top mistake type</span><span className="ts-num" style={{color:topMistake.color,fontSize:"0.72rem"}}>{topMistake.icon} {topMistake.name}</span></div>}
-              </div>
-              {errors.length>0&&<button onClick={clearAll} style={{width:"100%",padding:"8px",background:"none",border:"1px solid var(--red)",color:"var(--red)",borderRadius:6,cursor:"pointer",fontSize:"0.77rem",fontFamily:"inherit"}}>{confirmClear?"Tap again to confirm":"Clear today's log"}</button>}
+              )}
             </div>
           </div>
         </div>
@@ -751,13 +1237,14 @@ Write exactly 3 bullet points starting with a dash. Be specific and actionable.`
 
       {tab==="vocab" && (
         <div className="page">
-          <div className="sec-title">My Vocabulary Word List</div>
-          <div className="sec-sub">{wordList.length} words · {unmasteredCount} to learn · {wordList.filter(w=>w.mastered).length} mastered</div>
-          {wordList.length===0 ? <div className="word-empty"><div style={{fontSize:"2rem",marginBottom:10,opacity:.4}}>📚</div><div>No words yet. Log a TC or SE question to extract vocab automatically.</div></div> : (<>
-            {topWords.some(w=>w.seenCount>1)&&<div className="card" style={{marginBottom:16}}><div className="card-title">🔁 Words appearing in multiple questions</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{topWords.filter(w=>w.seenCount>1).map(w=><span key={w.id} style={{background:"var(--red-l)",color:"var(--red)",border:"1px solid #f0c0c0",borderRadius:20,padding:"4px 12px",fontSize:"0.8rem",fontWeight:500}}>{w.word} <span style={{fontFamily:"'DM Mono',monospace",fontSize:"0.68rem",opacity:.8}}>×{w.seenCount}</span></span>)}</div></div>}
-            <input placeholder="Search words..." value={wordSearch} onChange={e=>setWordSearch(e.target.value)} style={{marginBottom:12}} />
+          <div className="sec-title">My GRE Words</div>
+          <div className="sec-sub">Vocabulary extracted automatically from your TC/SE questions.</div>
+          {wordList.length===0 ? <div className="empty">No words yet. Log some TC/SE questions to start building your vocab list.</div> : (<>
             <div className="word-filters">
-              {[["all","All words"],["unmastered","To learn"],["mastered","Mastered ✓"]].map(([f,l])=><button key={f} className={`wf-btn${wordFilter===f?" active":""}`} onClick={()=>setWordFilter(f)}>{l}</button>)}
+              {[["all","All words"],["unmastered","To learn"],["mastered","Mastered"]].map(([v,l])=>(
+                <button key={v} className={`wf-btn${wordFilter===v?" active":""}`} onClick={()=>setWordFilter(v)}>{l}</button>
+              ))}
+              <input placeholder="Search words…" value={wordSearch} onChange={e=>setWordSearch(e.target.value)} style={{width:180,fontSize:"0.82rem",padding:"5px 10px"}} />
               <span style={{marginLeft:"auto",fontSize:"0.76rem",color:"var(--muted)",alignSelf:"center"}}>{filteredWords.length} words</span>
             </div>
             {filteredWords.length===0 ? <div className="word-empty">No words match.</div> : (
@@ -786,7 +1273,7 @@ Write exactly 3 bullet points starting with a dash. Be specific and actionable.`
               <div className="stat-card"><div className="num c-teal">{curStreak}</div><div className="lbl">Day streak</div><div className="sub">Longest: {longStreak}</div></div>
               <div className="stat-card"><div className="num">{totalLogged}</div><div className="lbl">Total errors</div><div className="sub">{history.length} report days</div></div>
               <div className="stat-card"><div className="num c-purple">{wordList.length}</div><div className="lbl">Vocab words</div><div className="sub">{unmasteredCount} to learn</div></div>
-              <div className="stat-card"><div className="num c-red">{daysLeft()}</div><div className="lbl">Days to exam</div><div className="sub">April 27</div></div>
+              <div className="stat-card"><div className="num c-red">{daysLeft()}</div><div className="lbl">Days to exam</div><div className="sub">May 4</div></div>
               <div className="stat-card"><div className="num c-amber" style={{fontSize:"1.05rem",paddingTop:6}}>{biggestWeak?.l||"—"}</div><div className="lbl">Biggest weak topic</div><div className="sub">{biggestWeak?topicCounts[biggestWeak.v]+" errors":""}</div></div>
             </div>
             {totalTagged>0&&<div className="chart-full"><div className="card"><div className="card-title">Quant mistake type breakdown — all time ({totalTagged} tagged)</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}><div className="mistake-breakdown">{MISTAKE_TYPES.filter(mt=>mistakeCounts[mt.v]>0).sort((a,b)=>mistakeCounts[b.v]-mistakeCounts[a.v]).map(mt=><div key={mt.v} className="mb-row"><div className="mb-label"><span>{mt.icon}</span><span style={{fontSize:"0.76rem"}}>{mt.name}</span></div><div className="mb-bar-w"><div className="mb-bar" style={{width:`${(mistakeCounts[mt.v]/totalTagged)*100}%`,background:mt.color}}/></div><div className="mb-cnt">{mistakeCounts[mt.v]}</div><div className="mb-pct">{Math.round((mistakeCounts[mt.v]/totalTagged)*100)}%</div></div>)}</div><ResponsiveContainer width="100%" height={180}><PieChart><Pie data={MISTAKE_TYPES.filter(mt=>mistakeCounts[mt.v]>0).map(mt=>({name:mt.name,value:mistakeCounts[mt.v]}))} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={({percent})=>`${(percent*100).toFixed(0)}%`} labelLine={false} fontSize={10}>{MISTAKE_TYPES.filter(mt=>mistakeCounts[mt.v]>0).map((mt,i)=><Cell key={i} fill={mt.color}/>)}</Pie><Tooltip contentStyle={{fontSize:11}}/></PieChart></ResponsiveContainer></div></div></div>}
